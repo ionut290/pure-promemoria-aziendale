@@ -277,6 +277,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     $('reminderForm').addEventListener('submit', submitEnhancedReminder, true);
     $('cancelReminderEdit').addEventListener('click', resetForm);
+    $('discoverFeatures').addEventListener('click', () => view('reminders'));
     for (const id of ['reminderSearch', 'reminderFilter', 'reminderCategoryFilter']) {
       $(id).addEventListener(id === 'reminderSearch' ? 'input' : 'change', renderReminders);
     }
