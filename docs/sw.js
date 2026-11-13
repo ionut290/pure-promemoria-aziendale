@@ -1,6 +1,6 @@
 /* Cache statico per apertura offline, senza notifiche push o GPS in background. */
-const VERSION='pure-web-cache-v4';
-const ASSETS=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./icon.svg'];
+const VERSION='pure-web-cache-v5';
+const ASSETS=['./','./index.html','./style.css','./app.js','./enhancements.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(VERSION).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
