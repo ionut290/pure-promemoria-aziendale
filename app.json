@@ -12,8 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.pure.promemoriaaziendale",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Usiamo la posizione per verificare se sei vicino al magazzino quando apri l'app.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Usiamo il geofencing anche in background per ricordarti di timbrare quando entri nel magazzino. Non registriamo gli spostamenti.",
+        "NSLocationWhenInUseUsageDescription": "Usiamo la posizione per verificare se sei vicino al ufficio quando apri l'app.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Usiamo il geofencing anche in background per ricordarti di timbrare quando entri nel ufficio. Non registriamo gli spostamenti.",
         "UIBackgroundModes": ["location"]
       }
     },
@@ -24,8 +24,8 @@
     },
     "plugins": [
       ["expo-location", {
-        "locationWhenInUsePermission": "Consenti a Pure Promemoria di controllare la distanza dal magazzino.",
-        "locationAlwaysAndWhenInUsePermission": "Consenti a Pure Promemoria di riconoscere l'arrivo e l'uscita dal magazzino anche in background.",
+        "locationWhenInUsePermission": "Consenti a Pure Promemoria di controllare la distanza dal ufficio.",
+        "locationAlwaysAndWhenInUsePermission": "Consenti a Pure Promemoria di riconoscere l'arrivo e l'uscita dal ufficio anche in background.",
         "isIosBackgroundLocationEnabled": true,
         "isAndroidBackgroundLocationEnabled": true,
         "isAndroidForegroundServiceEnabled": false
