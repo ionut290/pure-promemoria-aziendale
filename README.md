@@ -6,7 +6,7 @@ Prima versione del progetto React Native / Expo SDK 55, sviluppato come app **se
 
 - **Timbratura entrata e uscita** con fasce orarie modificabili e selezione giorni lavorativi.
 - **Ufficio** salvato con pulsante per acquisire latitudine e longitudine dal GPS, oppure inserimento manuale; raggio 100/150/300/500 metri.
-- **Geofencing**: quando il telefono rileva un ingresso nell'area del ufficio, prepara gli avvisi delle fasce successive; quando rileva un'uscita, annulla quelli programmati. Se l'app è aperta, verifica anche la posizione attuale.
+- **Geofencing**: quando il telefono rileva un ingresso nell'area dell'ufficio, prepara gli avvisi delle fasce successive; quando rileva un'uscita, annulla quelli programmati. Se l'app è aperta, verifica anche la posizione attuale.
 - **Avvisi ripetuti ogni 5, 10 o 15 minuti** nella fascia, fino a conferma manuale **Ho timbrato**, o alla fine della fascia. Suoneria originale inclusa.
 - **Modalità solo orario** (senza GPS) per chi preferisce promemoria non condizionati dalla posizione.
 - **Promemoria personalizzati** con titolo, note, data e ora; una volta oppure tutti i giorni.
@@ -19,7 +19,7 @@ Prima versione del progetto React Native / Expo SDK 55, sviluppato come app **se
 1. Le notifiche iOS non possono suonare in modo continuo come una chiamata in ingresso senza interrompersi al tocco. Qui si usano notifiche acustiche ripetute; modalità Silenzioso, Non disturbare/Full immersion, batteria, permessi e sistema operativo possono ritardarle o silenziarle.
 2. Il geofencing **non è esatto al metro né immediato** e dipende dal servizio di localizzazione. Un evento di uscita può arrivare con ritardo; questo può causare un avviso dopo l'uscita. Non usare il sistema come prova di presenza o controllo del dipendente.
 3. Serve il permesso posizione **Sempre** per il geofencing in background; su Android possono essere necessarie autorizzazioni dalle Impostazioni del sistema. La localizzazione precisa deve essere attiva.
-4. Dopo il rilevamento della posizione vengono programmate fino a **36 ore di promemoria** e non più di **48 notifiche di timbratura**; la pianificazione si rinnova all'avvio/rientro nell'app o al successivo ingresso nel ufficio. Non è garantita la consegna di tutti gli avvisi in ogni circostanza.
+4. Dopo il rilevamento della posizione vengono programmate fino a **36 ore di promemoria** e non più di **48 notifiche di timbratura**; la pianificazione si rinnova all'avvio/rientro nell'app o al successivo ingresso nell'ufficio. Non è garantita la consegna di tutti gli avvisi in ogni circostanza.
 5. Le impostazioni e il registro risiedono nel solo dispositivo (`AsyncStorage`), senza sincronizzazione tra più telefoni, senza backup cloud automatico e senza tracciamento del percorso.
 6. Promemoria molto numerosi possono incontrare limiti del sistema alla programmazione di notifiche locali, soprattutto su iOS.
 7. Le fasce possono attraversare mezzanotte, ma il registro di conferma è organizzato per **giorno solare**, non per turno: da migliorare prima dell'uso per turni notturni reali.
