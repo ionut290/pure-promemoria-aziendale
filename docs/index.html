@@ -35,6 +35,11 @@
     <section class="panel" id="today" aria-label="Promemoria di oggi">
       <div class="section-head"><h2>Timbrature di oggi</h2><span id="todayDate" class="muted"></span></div>
       <div class="notice"><strong>Funziona mentre è aperta.</strong> Questa versione web non può garantire il controllo GPS o la suoneria quando il telefono è bloccato o l'app è chiusa.</div>
+      <div class="overview" id="todayOverview" aria-live="polite">
+        <div><strong id="statToDo">0</strong><span>Da fare oggi</span></div>
+        <div><strong id="statCompleted">0</strong><span>Completati oggi</span></div>
+        <div><strong id="statHigh">0</strong><span>Priorità alta</span></div>
+      </div>
       <div class="cards">
         <article class="task-card">
           <div class="task-top"><span class="task-icon">↗</span><span class="state" id="entryState">Da confermare</span></div>
@@ -97,15 +102,35 @@
     </section>
     <section class="panel hidden" id="reminders" aria-label="Altri promemoria">
       <h2>Promemoria personali</h2>
-      <p class="muted">Aggiungi manutenzioni, documenti, appuntamenti o altre attività di lavoro.</p>
+      <p class="muted">Promemoria ricorrenti, priorità, categorie, rinvio e controllo della posizione. In questa versione gli avvisi si attivano soltanto con l'app aperta.</p>
       <form id="reminderForm" class="form-card">
         <div class="field"><label for="reminderTitle">Titolo</label><input id="reminderTitle" maxlength="120" required placeholder="Es. Controllare il furgone"></div>
         <div class="field"><label for="reminderWhen">Data e ora</label><input id="reminderWhen" type="datetime-local" required></div>
-        <div class="field"><label for="reminderRepeat">Ripetizione</label><select id="reminderRepeat"><option value="once">Una sola volta</option><option value="daily">Ogni giorno alla stessa ora</option></select></div>
+        <div class="two-col">
+          <div class="field"><label for="reminderRepeat">Ripetizione</label><select id="reminderRepeat"><option value="once">Una sola volta</option><option value="daily">Ogni giorno</option><option value="workdays">Dal lunedì al venerdì</option><option value="weekly">Ogni settimana</option><option value="monthly">Ogni mese</option></select></div>
+          <div class="field"><label for="reminderPriority">Priorità</label><select id="reminderPriority"><option value="normal">Normale</option><option value="high">Alta</option><option value="low">Bassa</option></select></div>
+        </div>
+        <div class="two-col">
+          <div class="field"><label for="reminderCategory">Categoria</label><select id="reminderCategory"><option value="lavoro">Lavoro</option><option value="mezzi">Mezzi e attrezzature</option><option value="documenti">Documenti</option><option value="appuntamenti">Appuntamenti</option><option value="personale">Personale</option></select></div>
+          <div class="field"><label for="reminderPlace">Dove avvisare</label><select id="reminderPlace"><option value="any">Ovunque</option><option value="office">Solo vicino all'ufficio (app aperta)</option></select></div>
+        </div>
         <div class="field"><label for="reminderNotes">Note (facoltative)</label><textarea id="reminderNotes" maxlength="400" rows="2"></textarea></div>
-        <button type="submit" class="primary block">+ Aggiungi promemoria</button>
+        <div class="form-actions"><button id="reminderSubmit" type="submit" class="primary block">+ Aggiungi promemoria</button><button id="cancelReminderEdit" type="button" class="secondary hidden">Annulla modifica</button></div>
+        <p id="reminderFeedback" class="feedback" role="status"></p>
       </form>
-      <h3>La tua lista</h3><div id="reminderList" class="reminder-list"></div>
+      <div class="reminder-toolbar">
+        <h3>Le tue attività <span id="reminderCount" class="muted"></span></h3>
+        <div class="reminder-filters">
+          <input id="reminderSearch" type="search" placeholder="Cerca promemoria" aria-label="Cerca promemoria">
+          <select id="reminderFilter" aria-label="Filtra promemoria">
+            <option value="open">Da fare</option><option value="all">Tutti</option><option value="completed">Completati</option><option value="high">Priorità alta</option>
+          </select>
+          <select id="reminderCategoryFilter" aria-label="Filtra per categoria">
+            <option value="all">Tutte le categorie</option><option value="lavoro">Lavoro</option><option value="mezzi">Mezzi</option><option value="documenti">Documenti</option><option value="appuntamenti">Appuntamenti</option><option value="personale">Personale</option>
+          </select>
+        </div>
+      </div>
+      <div id="reminderList" class="reminder-list"></div>
     </section>
     <section class="panel hidden" id="log" aria-label="Registro">
       <h2>Registro conferme</h2>
@@ -124,5 +149,6 @@
    <div class="dialog"><h2 id="installTitle">Aggiungi Pure alla schermata Home</h2><p id="installInfo">Su iPhone: apri questa pagina in Safari, premi Condividi e scegli “Aggiungi alla schermata Home”. Su Android: dal menu del browser scegli “Installa app” o “Aggiungi a schermata Home”.</p><button id="closeInstall" type="button" class="primary block">Ho capito</button></div>
  </div>
  <script src="./app.js" defer></script>
+ <script src="./enhancements.js" defer></script>
 </body>
 </html>
