@@ -1,0 +1,19 @@
+{
+  "name": "Pure Promemoria Aziendale",
+  "short_name": "Pure Promemoria",
+  "description": "Timbratura, magazzino e promemoria personali.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#126e65",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
