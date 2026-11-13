@@ -1,7 +1,7 @@
 {
   "name": "Pure Promemoria Aziendale",
   "short_name": "Pure Promemoria",
-  "description": "Timbratura, magazzino e promemoria personali.",
+  "description": "Timbratura, ufficio e promemoria personali.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
