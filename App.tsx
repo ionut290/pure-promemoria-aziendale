@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert, AppState, KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet,
+  Alert, AppState, KeyboardAvoidingView, Modal, Platform, ScrollView, StatusBar, StyleSheet,
   Switch, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -45,12 +45,40 @@ function Field({ label, value, change, placeholder, numeric = false }: {
       placeholderTextColor="#9AABB0" autoCorrect={false} keyboardType={numeric ? 'numbers-and-punctuation' : 'default'} />
   </View>;
 }
-function Header({ tab }: { tab: Tab }) {
-  const names: Record<Tab, string> = { home: 'Oggi', others: 'I miei promemoria', history: 'Registro', settings: 'Impostazioni' };
+function CalendarCard() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const first = new Date(year, month, 1);
+  const days = new Date(year, month + 1, 0).getDate();
+  const offset = (first.getDay() + 6) % 7;
+  const monthName = firstCapital(today.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' }));
+  const cells = Array.from({ length: offset + days }, (_, index) => index < offset ? null : index - offset + 1);
+  while (cells.length % 7) cells.push(null);
+  return <Panel style={styles.calendarCard}>
+    <View style={styles.cardHeaderRow}>
+      <View style={styles.cardTitleRow}><View style={styles.cardTitleIcon}><Text style={styles.cardTitleIconText}>▦</Text></View><Text style={styles.cardTitle}>Calendario</Text></View>
+      <TouchableOpacity style={styles.todayButton}><Text style={styles.todayButtonText}>Oggi</Text></TouchableOpacity>
+    </View>
+    <View style={styles.calendarNav}><Text style={styles.calendarArrow}>‹</Text><Text style={styles.calendarMonth}>{monthName}</Text><Text style={styles.calendarArrow}>›</Text></View>
+    <View style={styles.weekRow}>{['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].map(day => <Text key={day} style={styles.weekText}>{day}</Text>)}</View>
+    <View style={styles.calendarGrid}>{cells.map((day, index) => <View key={index} style={[styles.calendarCell, day === today.getDate() && styles.calendarCellToday]}><Text style={[styles.calendarDayText, day === today.getDate() && styles.calendarDayTextToday]}>{day ?? ''}</Text>{day === today.getDate() && <View style={styles.calendarDot}/>}</View>)}</View>
+    <View style={styles.calendarLegend}><Text style={styles.legendGreen}>● Promemoria</Text><Text style={styles.legendOrange}>● Priorità alta</Text></View>
+  </Panel>;
+}
+
+function Header({ tab, onMenu }: { tab: Tab; onMenu: () => void }) {
+  const names: Record<Tab, string> = { home: 'Oggi', others: 'Promemoria', history: 'Registro', settings: 'Impostazioni' };
+  const today = firstCapital(new Intl.DateTimeFormat('it-IT', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  }).format(new Date()));
   return <View style={styles.header}>
     <View style={styles.brandMark}><Text style={{ fontSize: 24, color: C.white }}>◉</Text></View>
     <View style={{ flex: 1 }}><Text style={styles.brand}>PURE</Text><Text style={styles.brandSub}>PROMEMORIA AZIENDALE</Text></View>
-    <View style={styles.tabChip}><Text style={styles.tabChipText}>{names[tab]}</Text></View>
+    {tab === 'home' && <View style={styles.headerDate}><Text style={styles.headerDateText}>▣  {today}</Text></View>}
+    <TouchableOpacity onPress={onMenu} accessibilityLabel="Apri menu" style={styles.menuButton}>
+      <Text style={styles.menuButtonText}>☰</Text>
+    </TouchableOpacity>
   </View>;
 }
 
@@ -65,6 +93,7 @@ export default function App() {
   const [latText, setLatText] = useState('');
   const [lonText, setLonText] = useState('');
   const [extraOpen, setExtraOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newNotes, setNewNotes] = useState('');
   const [newTime, setNewTime] = useState('09:00');
@@ -235,46 +264,63 @@ export default function App() {
   return <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top','bottom']}>
       <StatusBar barStyle="dark-content" backgroundColor={C.bg} />
-      <Header tab={tab}/>
+      <Header tab={tab} onMenu={() => setMenuOpen(true)}/>
+      <Modal visible={menuOpen} transparent animationType="slide" onRequestClose={() => setMenuOpen(false)}>
+        <View style={styles.menuOverlay}>
+          <TouchableOpacity style={styles.menuBackdrop} onPress={() => setMenuOpen(false)} />
+          <View style={styles.menuPanel}>
+            <View style={styles.menuPanelHead}><View><Text style={styles.menuLogo}>PURE</Text><Text style={styles.menuSubtitle}>Promemoria Aziendale</Text></View><TouchableOpacity onPress={() => setMenuOpen(false)}><Text style={styles.menuClose}>×</Text></TouchableOpacity></View>
+            {([
+              ['home','⌂','Dashboard'],
+              ['others','▦','Promemoria'],
+              ['history','✓','Registro'],
+              ['settings','⚙','Impostazioni']
+            ] as [Tab,string,string][]).map(([key, icon, label]) => <TouchableOpacity key={key} onPress={() => { setTab(key); setMenuOpen(false); if (key === 'settings') { setDraft(current.current.settings); setLatText(current.current.settings.warehouse.latitude?.toString() ?? ''); setLonText(current.current.settings.warehouse.longitude?.toString() ?? ''); } }} style={[styles.menuItem, tab === key && styles.menuItemActive]}><Text style={styles.menuIcon}>{icon}</Text><Text style={styles.menuLabel}>{label}</Text></TouchableOpacity>)}
+            <View style={styles.menuDivider}/>
+            <TouchableOpacity onPress={() => Alert.alert('Sincronizzazione', 'I dati dell’app mobile vengono salvati localmente sul dispositivo.')} style={styles.menuItem}><Text style={styles.menuIcon}>↻</Text><Text style={styles.menuLabel}>Sincronizzazione</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => Alert.alert('Account', 'La gestione dell’account è disponibile nella versione web.')} style={styles.menuItem}><Text style={styles.menuIcon}>♙</Text><Text style={styles.menuLabel}>Account</Text></TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       {!ready ? <View style={styles.center}><Text style={styles.muted}>Caricamento promemoria…</Text></View> :
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
             {tab === 'home' && <>
-              <View style={styles.eyebrow}><Text style={styles.eyebrowText}>IL TUO ASSISTENTE DI LAVORO</Text></View>
-              <Text style={styles.bigTitle}>Niente più timbrature dimenticate.</Text>
-              <Text style={styles.intro}>Avvisi automatici in base a orario e posizione, da confermare personalmente.</Text>
-              <Panel style={{ backgroundColor: C.dark, marginTop: 8 }}>
-                <Text style={styles.whiteSmall}>STATO UFFICIO</Text>
-                <Text style={styles.whiteTitle}>{s.warehouse.name}</Text>
-                <Text style={{ color: '#C0EAE4', marginBottom: 12 }}>{s.geoOnly ? status : 'Promemoria basati solamente sull’orario'}</Text>
-                <View style={styles.lightRow}>
-                  <Text style={{ color: '#E4FAF7' }}>📍 {s.geoOnly ? `${s.warehouse.radius} m · GPS` : 'GPS non richiesto'}</Text>
-                  <TouchableOpacity onPress={() => { setTab('settings'); setDraft(s); setLatText(s.warehouse.latitude?.toString() ?? ''); setLonText(s.warehouse.longitude?.toString() ?? ''); }}><Text style={styles.whiteLink}>Configura ›</Text></TouchableOpacity>
-                </View>
-              </Panel>
-              <View style={styles.sectionRow}><Title>Timbrature di oggi</Title><Text style={styles.smallTag}>{bothDone}/2 confermate</Text></View>
-              {(['entrata','uscita'] as StampType[]).map(kind => {
-                const done = isCompletedToday(data.completed,kind);
-                const w = s.windows[kind];
-                return <Panel key={kind}>
-                  <View style={styles.stampTop}>
-                    <View style={[styles.stampIcon, { backgroundColor: kind === 'entrata' ? C.pale : C.orangeBg }]}>
-                      <Text style={{ fontSize: 24 }}>{kind === 'entrata' ? '↗' : '↙'}</Text>
+              <View style={styles.focusGrid}>
+                <CalendarCard />
+                <View style={styles.focusMain}>
+                  <Panel style={styles.todayPanel}>
+                    <View style={styles.todayPanelHeader}>
+                      <View><Text style={styles.todayPanelTitle}>Promemoria di oggi</Text><Text style={styles.todayPanelSub}>I tuoi promemoria in programma</Text></View>
+                      <View style={styles.totalBadge}><Text style={styles.totalBadgeText}>{data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).length + (s.windows.entrata.enabled ? 1 : 0) + (s.windows.uscita.enabled ? 1 : 0)} in totale</Text></View>
                     </View>
-                    <View style={{ flex: 1 }}><Text style={styles.cardHeadline}>Timbratura {humanStamp(kind)}</Text>
-                      <Text style={styles.muted}>{w.start} – {w.end} · {w.enabled ? 'Attiva' : 'Disattivata'}</Text></View>
-                    <Text style={[styles.stateText, { color: done ? C.teal : C.orange }]}>{done ? '✓ Fatto' : 'Da fare'}</Text>
-                  </View>
-                  {!done && <Btn text={`✓ Ho timbrato ${kind}`} onPress={() => void markStamp(kind)} secondary />}
-                  {done && <Text style={styles.positive}>Confermato oggi. Gli altri avvisi vengono annullati.</Text>}
-                </Panel>;
-              })}
-              <View style={styles.sectionRow}><Title>Altri promemoria</Title><TouchableOpacity onPress={() => setTab('others')}><Text style={styles.link}>Vedi tutti ›</Text></TouchableOpacity></View>
-              <Panel><Text style={styles.cardHeadline}>{remaining} promemoria attivi</Text>
-                <Text style={styles.muted}>Documenti, manutenzioni, appuntamenti e altre attività.</Text>
-                <View style={{ height: 12 }}/><Btn text="+ Nuovo promemoria" onPress={() => { setTab('others'); setExtraOpen(true); }}/>
-              </Panel>
-              <Text style={styles.footnote}>Pure ricorda di timbrare, ma non registra le presenze nel sistema aziendale.</Text>
+                    <View style={styles.todayList}>
+                      {(['entrata','uscita'] as StampType[]).filter(kind => s.windows[kind].enabled).map(kind => {
+                        const done = isCompletedToday(data.completed, kind);
+                        const w = s.windows[kind];
+                        return <View key={kind} style={styles.focusReminderRow}>
+                          <View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View>
+                          <Text style={styles.focusReminderTime}>{w.start}</Text>
+                          <View style={styles.focusReminderBody}><Text style={[styles.focusReminderTitle, done && styles.focusReminderDone]}>Timbratura {humanStamp(kind)}</Text><Text style={styles.priorityNormal}>Promemoria normale</Text></View>
+                          <TouchableOpacity onPress={() => void markStamp(kind)} style={[styles.focusCheck, done && styles.focusCheckDone]}><Text style={styles.focusCheckText}>{done ? '✓' : ''}</Text></TouchableOpacity>
+                        </View>;
+                      })}
+                      {data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).slice(0, 6).map(item => <View key={item.id} style={styles.focusReminderRow}>
+                        <View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View>
+                        <Text style={styles.focusReminderTime}>{item.time}</Text>
+                        <View style={styles.focusReminderBody}><Text style={styles.focusReminderTitle}>{item.title}</Text><Text style={styles.priorityNormal}>Promemoria normale</Text></View>
+                        <TouchableOpacity onPress={() => void changePersonal(item.id)} style={styles.focusCheck}><Text style={styles.focusCheckText}></Text></TouchableOpacity>
+                      </View>)}
+                      {!data.personal.some(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())) && !s.windows.entrata.enabled && !s.windows.uscita.enabled && <Text style={styles.emptyFocus}>Nessun promemoria per oggi.</Text>}
+                    </View>
+                  </Panel>
+                  <Panel style={styles.upcomingFocus}>
+                    <View style={styles.cardHeaderRow}><View style={styles.cardTitleRow}><Text style={styles.upcomingIcon}>▱</Text><Text style={styles.cardTitle}>Prossimi promemoria</Text></View><TouchableOpacity onPress={() => setTab('others')}><Text style={styles.link}>Vedi tutti ›</Text></TouchableOpacity></View>
+                    {data.personal.filter(p => p.active && p.date > localDayKey()).slice(0, 3).map(item => <View key={item.id} style={styles.upcomingRow}><View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View><Text style={styles.focusReminderTime}>{item.time}</Text><Text style={styles.upcomingTitle}>{item.title}</Text><Text style={styles.upcomingDate}>{item.date}</Text></View>)}
+                    {!data.personal.some(p => p.active && p.date > localDayKey()) && <Text style={styles.emptyFocus}>Nessun altro promemoria programmato.</Text>}
+                  </Panel>
+                </View>
+              </View>
             </>}
 
             {tab === 'others' && <>
@@ -384,7 +430,7 @@ export default function App() {
               <Text style={styles.footnote}>I dati restano su questo telefono. Non vengono registrati percorsi o coordinate dei tuoi spostamenti. Il sistema può ritardare o silenziare avvisi secondo le proprie impostazioni.</Text>
             </>}
           </ScrollView>
-          <View style={styles.bottomBar}>
+          <View style={[styles.bottomBar, { display: 'none' }]}>
             {([['home','⌂','Oggi'],['others','▦','Promemoria'],['history','◷','Registro'],['settings','⚙','Impostazioni']] as [Tab,string,string][]).map(([key,icon,label])=>
               <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} key={key} onPress={()=>{setTab(key);if(key==='settings'){setDraft(current.current.settings);setLatText(current.current.settings.warehouse.latitude?.toString() ?? '');setLonText(current.current.settings.warehouse.longitude?.toString() ?? '');}}} style={[styles.bottomItem,tab===key&&styles.bottomSelected]}>
                 <Text style={[styles.bottomIcon,tab===key&&{color:C.teal}]}>{icon}</Text>
@@ -397,7 +443,70 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  center: {flex:1,justifyContent:'center',alignItems:'center'},
+  menuButton:{width:44,height:44,borderRadius:13,backgroundColor:C.teal,alignItems:'center',justifyContent:'center'},
+  menuButtonText:{color:C.white,fontSize:25,fontWeight:'700'},
+  headerDate:{backgroundColor:C.white,borderWidth:1,borderColor:C.line,borderRadius:18,paddingHorizontal:11,paddingVertical:8,maxWidth:180},
+  headerDateText:{color:C.ink,fontSize:10,fontWeight:'800'},
+  focusGrid:{gap:14},
+  focusMain:{gap:14},
+  calendarCard:{padding:16},
+  cardHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8},
+  cardTitleRow:{flexDirection:'row',alignItems:'center',gap:9},
+  cardTitleIcon:{width:35,height:35,borderRadius:10,backgroundColor:C.pale,alignItems:'center',justifyContent:'center'},
+  cardTitleIconText:{color:C.teal,fontSize:22,fontWeight:'800'},
+  cardTitle:{color:C.ink,fontSize:18,fontWeight:'900'},
+  todayButton:{borderWidth:1,borderColor:C.line,borderRadius:10,paddingHorizontal:12,paddingVertical:8},
+  todayButtonText:{color:C.teal,fontWeight:'800',fontSize:12},
+  calendarNav:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:18,marginBottom:14},
+  calendarArrow:{color:C.teal,fontSize:32,fontWeight:'300'},
+  calendarMonth:{color:C.ink,fontSize:18,fontWeight:'900'},
+  weekRow:{flexDirection:'row',justifyContent:'space-between',marginBottom:9},
+  weekText:{color:C.muted,fontSize:10,fontWeight:'800',width:34,textAlign:'center'},
+  calendarGrid:{flexDirection:'row',flexWrap:'wrap',gap:4},
+  calendarCell:{width:'13.2%',aspectRatio:1,alignItems:'center',justifyContent:'center',borderRadius:10},
+  calendarCellToday:{backgroundColor:C.teal},
+  calendarDayText:{color:C.ink,fontSize:13,fontWeight:'600'},
+  calendarDayTextToday:{color:C.white,fontWeight:'900'},
+  calendarDot:{position:'absolute',bottom:3,width:4,height:4,borderRadius:2,backgroundColor:'#9FF0C0'},
+  calendarLegend:{flexDirection:'row',gap:15,marginTop:12},
+  legendGreen:{color:C.teal,fontSize:10},
+  legendOrange:{color:C.orange,fontSize:10},
+  todayPanel:{padding:0,overflow:'hidden'},
+  todayPanelHeader:{backgroundColor:C.teal,padding:18,flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8},
+  todayPanelTitle:{color:C.white,fontSize:21,fontWeight:'900'},
+  todayPanelSub:{color:'#C9EFE8',fontSize:12,marginTop:4},
+  totalBadge:{backgroundColor:'#FFFFFF25',borderRadius:18,paddingHorizontal:10,paddingVertical:8},
+  totalBadgeText:{color:C.white,fontSize:11,fontWeight:'800'},
+  todayList:{paddingHorizontal:15,paddingBottom:8},
+  focusReminderRow:{minHeight:62,flexDirection:'row',alignItems:'center',gap:9,borderBottomWidth:1,borderColor:C.line},
+  focusReminderIcon:{width:35,height:35,borderRadius:11,backgroundColor:C.pale,alignItems:'center',justifyContent:'center'},
+  focusReminderIconText:{color:C.teal,fontSize:18},
+  focusReminderTime:{color:C.muted,fontSize:12,width:42},
+  focusReminderBody:{flex:1},
+  focusReminderTitle:{color:C.ink,fontSize:14,fontWeight:'800'},
+  focusReminderDone:{textDecorationLine:'line-through',color:C.muted},
+  priorityNormal:{alignSelf:'flex-start',color:'#297454',backgroundColor:'#E4F5EA',borderRadius:12,paddingHorizontal:7,paddingVertical:3,fontSize:9,fontWeight:'800',marginTop:4},
+  focusCheck:{width:25,height:25,borderWidth:2,borderColor:'#9AAEAD',borderRadius:6,alignItems:'center',justifyContent:'center'},
+  focusCheckDone:{backgroundColor:C.teal,borderColor:C.teal},
+  focusCheckText:{color:C.white,fontWeight:'900'},
+  emptyFocus:{color:C.muted,textAlign:'center',padding:22,fontSize:12},
+  upcomingFocus:{padding:16},
+  upcomingIcon:{color:C.teal,fontSize:30},
+  upcomingRow:{minHeight:52,flexDirection:'row',alignItems:'center',gap:8,borderTopWidth:1,borderColor:C.line},
+  upcomingTitle:{flex:1,color:C.ink,fontSize:13,fontWeight:'800'},
+  upcomingDate:{color:C.muted,fontSize:10},
+  menuOverlay:{flex:1,flexDirection:'row',justifyContent:'flex-end'},
+  menuBackdrop:{...StyleSheet.absoluteFillObject,backgroundColor:'#092F2B66'},
+  menuPanel:{width:'78%',maxWidth:360,backgroundColor:C.white,paddingHorizontal:20,paddingTop:35,paddingBottom:25},
+  menuPanelHead:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingBottom:22,borderBottomWidth:1,borderColor:C.line,marginBottom:18},
+  menuLogo:{color:C.teal,fontSize:25,fontWeight:'900'},
+  menuSubtitle:{color:C.muted,fontSize:11,marginTop:2},
+  menuClose:{color:C.teal,fontSize:31,fontWeight:'300'},
+  menuItem:{flexDirection:'row',alignItems:'center',gap:14,borderRadius:12,padding:14},
+  menuItemActive:{backgroundColor:C.pale},
+  menuIcon:{color:C.teal,fontSize:22,width:25,textAlign:'center'},
+  menuLabel:{color:C.ink,fontSize:15,fontWeight:'700'},
+  menuDivider:{height:1,backgroundColor:C.line,marginVertical:12},  center: {flex:1,justifyContent:'center',alignItems:'center'},
   header: { flexDirection:'row', alignItems:'center', paddingHorizontal:20, paddingVertical:13,
     backgroundColor:C.bg, borderBottomWidth:1, borderColor:C.line, gap:11 },
   brandMark: {width:39,height:39,borderRadius:13,backgroundColor:C.teal,alignItems:'center',justifyContent:'center'},
