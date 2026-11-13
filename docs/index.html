@@ -41,14 +41,31 @@
           <h3>Timbratura entrata</h3>
           <p id="entryWindow">07:00 – 08:00</p>
           <button class="primary block" type="button" data-confirm="entry">Ho timbrato l'entrata</button>
+          <a class="secondary block punch-launch-link" href="shortcuts://run-shortcut?name=Pure%20Timbratura">↗ Apri app per timbrare</a>
         </article>
         <article class="task-card">
           <div class="task-top"><span class="task-icon out">↙</span><span class="state" id="exitState">Da confermare</span></div>
           <h3>Timbratura uscita</h3>
           <p id="exitWindow">16:00 – 17:00</p>
           <button class="primary block" type="button" data-confirm="exit">Ho timbrato l'uscita</button>
+          <a class="secondary block punch-launch-link" href="shortcuts://run-shortcut?name=Pure%20Timbratura">↗ Apri app per timbrare</a>
         </article>
       </div>
+      <details class="punch-setup">
+        <summary>Come collegare l'app di timbratura installata su iPhone</summary>
+        <p>La prima volta, sull'iPhone devi creare un comando rapido. In seguito il pulsante <strong>Apri app per timbrare</strong> proverà ad avviare direttamente l'app aziendale.</p>
+        <ol>
+          <li>Apri <strong>Comandi Rapidi</strong> sull'iPhone e premi <strong>+</strong> per crearne uno.</li>
+          <li>Assegna al comando il nome esatto <strong>Pure Timbratura</strong>.</li>
+          <li>Aggiungi l'azione <strong>Apri app</strong> e seleziona la tua app aziendale di timbratura.</li>
+          <li>Salva. Torna in Pure e premi <strong>Apri app per timbrare</strong>.</li>
+        </ol>
+        <p class="punch-help-note">L'app aziendale deve essere già installata. Non è una timbratura automatica: dopo aver timbrato nell'app ufficiale, torna qui e premi <strong>Ho timbrato</strong>. Su Android il collegamento con Comandi Rapidi non è disponibile.</p>
+        <div class="punch-help-links">
+          <a href="shortcuts://create-shortcut">Crea il comando rapido su iPhone</a>
+          <a href="https://apps.apple.com/app/id1612276209" target="_blank" rel="noopener noreferrer">Apri la pagina App Store dell'app aziendale</a>
+        </div>
+      </details>
       <div class="split-head"><h2>Altri promemoria</h2><button class="text-btn" id="goReminders" type="button">Vedi tutti</button></div>
       <div id="todayReminders" class="reminder-list"></div>
       <div class="test-box"><div><strong>Prova l'avviso sonoro</strong><small>Si attiva solo dopo un tuo tocco e mentre l'app è aperta.</small></div><button id="testAlarm" class="secondary" type="button">Prova</button></div>
