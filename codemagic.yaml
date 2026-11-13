@@ -1,0 +1,73 @@
+# Pure Promemoria Aziendale: alternativa a Expo EAS.
+# Per il workflow iOS, configurare in Codemagic l'integrazione App Store
+# Connect chiamata "pure-promemoria-apple" e creare l'app con il bundle ID
+# com.pure.promemoriaaziendale in App Store Connect.
+workflows:
+  android-apk:
+    name: Android - APK di prova
+    max_build_duration: 120
+    instance_type: linux_x2
+    environment:
+      node: 22
+      java: 17
+      vars:
+        EXPO_NO_TELEMETRY: "1"
+    scripts:
+      - name: Installa dipendenze
+        script: npm install
+      - name: Genera progetto Android
+        script: npx expo prebuild --platform android --non-interactive --clean
+      - name: Compila APK Android
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
+
+  ios-testflight:
+    name: iPhone - TestFlight
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: pure-promemoria-apple
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.pure.promemoriaaziendale
+      vars:
+        EXPO_NO_TELEMETRY: "1"
+    scripts:
+      - name: Installa dipendenze
+        script: npm install
+      - name: Genera progetto iOS
+        script: npx expo prebuild --platform ios --non-interactive --clean
+      - name: Installa CocoaPods
+        script: |
+          cd ios
+          pod install
+      - name: Trova workspace Xcode
+        script: |
+          WORKSPACE=$(find "$CM_BUILD_DIR/ios" -maxdepth 1 -name '*.xcworkspace' -type d | head -1)
+          test -n "$WORKSPACE"
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "XCODE_WORKSPACE=$WORKSPACE" >> "$CM_ENV"
+          echo "XCODE_SCHEME=$SCHEME" >> "$CM_ENV"
+      - name: Configura firma Apple
+        script: xcode-project use-profiles
+      - name: Crea IPA iOS
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
