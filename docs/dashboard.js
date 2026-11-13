@@ -195,6 +195,10 @@
   };
   document.addEventListener('DOMContentLoaded',()=>{
     $('heroAdd').addEventListener('click',()=>{selected=asDay(new Date());goAdd()});
+    document.querySelector('[data-focus-reminder]')?.addEventListener('click',()=>{
+      $('reminderTitle').focus();
+      $('reminderForm').scrollIntoView({behavior:'smooth',block:'start'});
+    });
     $('heroSettings').addEventListener('click',()=>view('settings'));
     $('activeRemindersOpen').addEventListener('click',()=>view('reminders'));
     $('priorityRemindersOpen').addEventListener('click',()=>{
