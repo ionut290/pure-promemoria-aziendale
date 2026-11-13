@@ -101,10 +101,15 @@
         <p class="punch-help-note">Il collegamento non timbra automaticamente. Su Android questo comando rapido Apple non funziona. Gli avvisi della versione web richiedono che l'app rimanga aperta.</p>
       </details>
     </section>
-    <section class="panel hidden" id="settings" aria-label="Impostazioni ufficio">
-      <h2>Il tuo ufficio</h2>
-      <p class="muted">Configura dove e quando vuoi ricevere il promemoria. I dati rimangono in questo dispositivo.</p>
-      <form id="settingsForm">
+    <section class="panel hidden workspace-view settings-view" id="settings" aria-label="Impostazioni ufficio">
+      <div class="view-hero settings-hero">
+        <div class="view-hero-icon" aria-hidden="true">⌖</div>
+        <div><div class="view-kicker">CONFIGURAZIONE</div><h2>Il tuo ufficio, sempre sotto controllo.</h2><p>Imposta una volta luogo e orari: Pure ti ricorda la timbratura nel momento giusto.</p></div>
+        <div class="view-hero-badge"><span class="dot" aria-hidden="true"></span> Dati solo su questo dispositivo</div>
+      </div>
+      <div class="settings-layout">
+      <form id="settingsForm" class="workspace-card settings-card">
+        <div class="card-title"><span aria-hidden="true">⌖</span><div><strong>Posizione e avvisi</strong><small>Le impostazioni che usi ogni giorno</small></div></div>
         <div class="field"><label for="mode">Quando ricordare la timbratura</label><select id="mode"><option value="gps">Solo se sono vicino all'ufficio (app aperta)</option><option value="clock">In base all'orario, senza GPS (app aperta)</option></select></div>
         <div class="gps-fields" id="gpsFields">
           <div class="field"><label for="warehouse">Nome ufficio</label><input id="warehouse" maxlength="90" placeholder="Es. Ufficio aziendale"></div>
@@ -115,7 +120,7 @@
           <div class="field"><label for="radius">Raggio di rilevamento</label><select id="radius"><option value="100">100 metri</option><option value="150">150 metri</option><option value="300">300 metri</option><option value="500">500 metri</option></select></div>
           <div class="inline"><button id="locate" type="button" class="secondary">⌖ Usa la posizione attuale</button><span class="muted small" id="positionStatus">Posizione non verificata</span></div>
         </div>
-        <div class="separator"></div>
+        <div class="separator"></div><div class="form-section-label">ORARI DI LAVORO</div>
         <h3>Fascia di entrata</h3>
         <div class="two-col"><div class="field"><label for="entryStart">Dalle</label><input id="entryStart" type="time" required></div><div class="field"><label for="entryEnd">Alle</label><input id="entryEnd" type="time" required></div></div>
         <h3>Fascia di uscita</h3>
@@ -125,11 +130,22 @@
         <button type="submit" class="primary block">Salva impostazioni</button>
         <p id="saveMessage" class="feedback" role="status"></p>
       </form>
+      <aside class="workspace-aside settings-aside">
+        <div class="aside-icon" aria-hidden="true">✓</div><h3>Pronto in 3 passaggi</h3>
+        <ol class="setup-steps"><li><span>1</span><div><strong>Scegli il metodo</strong><small>Con posizione o solo in base all’orario.</small></div></li><li><span>2</span><div><strong>Imposta entrata e uscita</strong><small>Pure sa quando deve avvisarti.</small></div></li><li><span>3</span><div><strong>Salva e vai tranquillo</strong><small>Potrai modificare tutto quando vuoi.</small></div></li></ol>
+        <div class="aside-note"><span aria-hidden="true">◷</span> Gli avvisi funzionano quando l’app è aperta.</div>
+      </aside>
+      </div>
     </section>
-    <section class="panel hidden" id="reminders" aria-label="Altri promemoria">
-      <h2>Promemoria personali</h2>
-      <p class="muted">Promemoria ricorrenti, priorità, categorie, rinvio e controllo della posizione. In questa versione gli avvisi si attivano soltanto con l'app aperta.</p>
-      <form id="reminderForm" class="form-card">
+    <section class="panel hidden workspace-view reminders-view" id="reminders" aria-label="Altri promemoria">
+      <div class="view-hero reminders-hero">
+        <div class="view-hero-icon" aria-hidden="true">▤</div>
+        <div><div class="view-kicker">ORGANIZZA LA GIORNATA</div><h2>Ogni cosa importante, al posto giusto.</h2><p>Crea attività, scegli la priorità e ritrova tutto in un attimo.</p></div>
+        <button class="view-hero-action" type="button" data-focus-reminder>＋ Nuovo promemoria</button>
+      </div>
+      <div class="reminders-layout">
+      <form id="reminderForm" class="form-card workspace-card reminder-form-card">
+        <div class="card-title"><span aria-hidden="true">＋</span><div><strong>Nuovo promemoria</strong><small>Occorrono solo pochi secondi</small></div></div>
         <div class="field"><label for="reminderTitle">Titolo</label><input id="reminderTitle" maxlength="120" required placeholder="Es. Controllare il furgone"></div>
         <div class="field"><label for="reminderWhen">Data e ora</label><input id="reminderWhen" type="datetime-local" required></div>
         <div class="two-col">
@@ -144,6 +160,8 @@
         <div class="form-actions"><button id="reminderSubmit" type="submit" class="primary block">+ Aggiungi promemoria</button><button id="cancelReminderEdit" type="button" class="secondary hidden">Annulla modifica</button></div>
         <p id="reminderFeedback" class="feedback" role="status"></p>
       </form>
+      <aside class="workspace-aside reminder-aside"><div class="aside-icon" aria-hidden="true">⚑</div><h3>Un promemoria fatto bene</h3><p>Dai un titolo chiaro, scegli quando riceverlo e usa “Alta” solo per le cose davvero urgenti.</p><div class="tip-list"><span>◷ Puoi rinviarlo di 10 minuti</span><span>⌖ Puoi limitarlo all’ufficio</span><span>✓ Lo completi con un tocco</span></div></aside>
+      </div>
       <div class="reminder-toolbar">
         <h3>Le tue attività <span id="reminderCount" class="muted"></span></h3>
         <div class="reminder-filters">
@@ -158,12 +176,16 @@
       </div>
       <div id="reminderList" class="reminder-list"></div>
     </section>
-    <section class="panel hidden" id="log" aria-label="Registro">
-      <h2>Registro conferme</h2>
-      <p class="muted">Le conferme servono solo come memoria personale, non sono timbrature ufficiali.</p>
-      <div id="history" class="history"></div>
-      <div class="data-buttons"><button id="exportData" class="secondary" type="button">Esporta i dati</button><button id="importData" class="secondary" type="button">Importa i dati</button><input id="importFile" type="file" accept=".json,application/json" hidden></div>
-      <div class="notice subtle">I dati sono salvati solo nel browser di questo dispositivo: eliminando i dati del sito possono andare persi. Utilizza Esporta per crearne una copia.</div>
+    <section class="panel hidden workspace-view log-view" id="log" aria-label="Registro">
+      <div class="view-hero log-hero">
+        <div class="view-hero-icon" aria-hidden="true">✓</div>
+        <div><div class="view-kicker">LA TUA MEMORIA</div><h2>Tieni traccia, senza complicazioni.</h2><p>Qui trovi le conferme fatte nell’app e puoi custodire i tuoi dati.</p></div>
+        <div class="view-hero-badge"><span aria-hidden="true">⌁</span> Registro personale</div>
+      </div>
+      <div class="log-layout">
+        <div class="workspace-card history-card"><div class="card-title"><span aria-hidden="true">✓</span><div><strong>Ultime conferme</strong><small>La cronologia più recente</small></div></div><div id="history" class="history"></div></div>
+        <aside class="workspace-aside data-aside"><div class="aside-icon" aria-hidden="true">⇩</div><h3>Salva una copia</h3><p>Esporta i dati prima di cambiare telefono o di cancellare i dati del browser.</p><div class="data-buttons"><button id="exportData" class="primary" type="button">⇩ Esporta dati</button><button id="importData" class="secondary" type="button">⇧ Importa dati</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><div class="notice subtle">I dati restano solo in questo browser. Conserva il file esportato in un posto sicuro.</div></aside>
+      </div>
     </section>
     <footer><span>Pure Promemoria Aziendale</span><span>Versione web · Nessuna timbratura automatica</span></footer>
   </main>
