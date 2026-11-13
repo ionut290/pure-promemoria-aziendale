@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Pure Promemoria Aziendale",
+    "slug": "pure-promemoria-aziendale",
+    "scheme": "purepromemoria",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {"backgroundColor": "#F4F8FA", "image": "./assets/icon.png", "resizeMode": "contain"},
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pure.promemoriaaziendale",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Usiamo la posizione per verificare se sei vicino al magazzino quando apri l'app.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Usiamo il geofencing anche in background per ricordarti di timbrare quando entri nel magazzino. Non registriamo gli spostamenti.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "package": "com.pure.promemoriaaziendale",
+      "adaptiveIcon": {"foregroundImage": "./assets/icon.png", "backgroundColor": "#F4F8FA"},
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "POST_NOTIFICATIONS"]
+    },
+    "plugins": [
+      ["expo-location", {
+        "locationWhenInUsePermission": "Consenti a Pure Promemoria di controllare la distanza dal magazzino.",
+        "locationAlwaysAndWhenInUsePermission": "Consenti a Pure Promemoria di riconoscere l'arrivo e l'uscita dal magazzino anche in background.",
+        "isIosBackgroundLocationEnabled": true,
+        "isAndroidBackgroundLocationEnabled": true,
+        "isAndroidForegroundServiceEnabled": false
+      }],
+      ["expo-notifications", {"sounds": ["./assets/alert.wav"], "color": "#0C776D"}]
+    ],
+    "extra": {"purpose": "Promemoria personali aziendali. L'app non effettua timbrature reali."}
+  }
+}
