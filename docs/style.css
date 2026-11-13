@@ -42,3 +42,15 @@
   .reminder-item.enhanced{flex-direction:column;gap:9px}
   .advanced-actions{max-width:100%;width:100%;justify-content:flex-start}
 }
+
+/* Presentazione delle nuove funzioni nella schermata Oggi */
+.whats-new{display:flex;justify-content:space-between;align-items:center;gap:22px;margin:6px 0 25px;padding:24px 26px;border:1px solid #cddfd8;border-radius:18px;background:linear-gradient(105deg,#fdfefd 5%,#e2f3eb 100%);box-shadow:0 6px 22px #14665310}
+.whats-new-content{max-width:650px;flex:1}
+.whats-new-label{display:inline-block;color:#147568;font-size:11px;font-weight:800;letter-spacing:.07em}
+.whats-new h2{font-size:23px;color:#174f43;margin:7px 0;letter-spacing:-.65px}
+.whats-new p{font-size:13px;color:#4b6f64;line-height:1.55;margin:7px 0 12px}
+.whats-new-features{display:flex;flex-wrap:wrap;gap:7px}
+.whats-new-features span{font-size:11px;font-weight:700;color:#316f5d;background:#fff;border:1px solid #d8e9df;padding:6px 9px;border-radius:8px}
+.whats-new-button{background:#14776d;border:1px solid #14776d;border-radius:12px;color:white;padding:14px 18px;font-size:13px;font-weight:750;cursor:pointer;max-width:220px;line-height:1.3}
+.whats-new-button:hover{background:#0f5f55}
+@media(max-width:700px){.whats-new{padding:19px 18px;flex-direction:column;align-items:stretch;gap:15px}.whats-new h2{font-size:21px}.whats-new-button{max-width:none;width:100%}}
