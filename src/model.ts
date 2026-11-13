@@ -31,7 +31,7 @@ export interface AppData {
 }
 export const DEFAULT_DATA: AppData = {
   settings: {
-    warehouse: { name: 'Il mio magazzino', latitude: null, longitude: null, radius: 150 },
+    warehouse: { name: 'Il mio ufficio', latitude: null, longitude: null, radius: 150 },
     days: [1, 2, 3, 4, 5],
     windows: { entrata: { enabled: true, start: '07:00', end: '09:00' }, uscita: { enabled: true, start: '16:00', end: '18:00' } },
     geoOnly: true,
