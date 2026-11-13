@@ -20,11 +20,18 @@
     <button id="installBtn" class="mini-btn" type="button">Installa app</button>
   </header>
   <main>
-    <section class="intro">
-      <div class="eyebrow">LA TUA GIORNATA DI LAVORO</div>
-      <h1>Non dimenticare<br>la timbratura.</h1>
-      <p>Entrata, uscita e promemoria personali in un unico posto.</p>
-      <div class="info-pill"><span class="dot"></span><span id="liveStatus">Pronto per la configurazione</span></div>
+    <section class="intro pure-hero">
+      <div class="hero-copy">
+        <div class="eyebrow">LA TUA GIORNATA DI LAVORO</div>
+        <h1>Non dimenticare<br>la timbratura.</h1>
+        <p>Entra, esci e gestisci i tuoi promemoria aziendali in un unico posto.</p>
+        <div class="hero-actions">
+          <button id="heroAdd" class="hero-primary" type="button"><span aria-hidden="true">＋</span> Aggiungi promemoria</button>
+          <button id="heroSettings" class="hero-secondary" type="button"><span aria-hidden="true">⚙</span> Imposta la posizione dell'ufficio</button>
+        </div>
+        <div class="hero-status"><span class="dot" aria-hidden="true"></span><span id="liveStatus">Verifica posizione</span></div>
+      </div>
+      <img class="hero-illustration" src="./hero-workspace.svg" alt="" role="presentation">
     </section>
     <nav class="tabs" aria-label="Sezioni">
       <button class="tab active" data-tab="today" type="button"><span>◷</span> Oggi</button>
@@ -32,57 +39,67 @@
       <button class="tab" data-tab="reminders" type="button"><span>▤</span> Promemoria</button>
       <button class="tab" data-tab="log" type="button"><span>✓</span> Registro</button>
     </nav>
-    <section class="panel" id="today" aria-label="Promemoria di oggi">
-      <section class="whats-new" aria-label="Novità Pure Promemoria">
-        <div class="whats-new-content">
-          <span class="whats-new-label">NOVITÀ · VERSIONE 1.2</span>
-          <h2>Più di un semplice promemoria.</h2>
-          <p>Priorità, categorie, ripetizioni settimanali e mensili, ricerca, rinvio e modifica delle attività: tutto in un'unica app.</p>
-          <div class="whats-new-features"><span>★ Priorità</span><span>↻ Ripetizioni</span><span>⌕ Ricerca</span><span>◷ Rinvio</span></div>
-        </div>
-        <button id="discoverFeatures" class="whats-new-button" type="button">Scopri le nuove funzioni</button>
-      </section>
-      <div class="section-head"><h2>Timbrature di oggi</h2><span id="todayDate" class="muted"></span></div>
-      <div class="notice"><strong>Funziona mentre è aperta.</strong> Questa versione web non può garantire il controllo GPS o la suoneria quando il telefono è bloccato o l'app è chiusa.</div>
-      <div class="overview" id="todayOverview" aria-live="polite">
-        <div><strong id="statToDo">0</strong><span>Da fare oggi</span></div>
-        <div><strong id="statCompleted">0</strong><span>Completati oggi</span></div>
-        <div><strong id="statHigh">0</strong><span>Priorità alta</span></div>
+    <section class="panel dashboard-panel" id="today" aria-label="Dashboard e calendario">
+      <div class="dash-stats">
+        <article class="dash-stat">
+          <div class="dash-stat-icon" aria-hidden="true">⇥</div>
+          <div class="dash-stat-body"><span class="dash-stat-title">Entrata</span>
+            <div class="dash-stat-main"><strong id="entryWindow">07:00 – 08:00</strong><span class="state" id="entryState">Da confermare</span></div>
+            <div class="dash-stat-actions"><button class="dash-link" type="button" data-confirm="entry">Ho timbrato</button><a href="shortcuts://run-shortcut?name=Pure%20Timbratura" class="dash-link">Apri app</a></div>
+          </div>
+        </article>
+        <article class="dash-stat">
+          <div class="dash-stat-icon" aria-hidden="true">⇤</div>
+          <div class="dash-stat-body"><span class="dash-stat-title">Uscita</span>
+            <div class="dash-stat-main"><strong id="exitWindow">16:00 – 17:00</strong><span class="state" id="exitState">Da confermare</span></div>
+            <div class="dash-stat-actions"><button class="dash-link" type="button" data-confirm="exit">Ho timbrato</button><a href="shortcuts://run-shortcut?name=Pure%20Timbratura" class="dash-link">Apri app</a></div>
+          </div>
+        </article>
+        <article class="dash-stat">
+          <div class="dash-stat-icon" aria-hidden="true">♧</div>
+          <div class="dash-stat-body"><span class="dash-stat-title">Promemoria attivi</span>
+            <div class="dash-stat-main"><strong id="activeRemindersCount">0</strong><span class="dash-stat-caption">Da completare</span></div>
+            <button id="activeRemindersOpen" class="dash-link" type="button">Visualizza attività</button>
+          </div>
+        </article>
+        <article class="dash-stat">
+          <div class="dash-stat-icon high" aria-hidden="true">⚑</div>
+          <div class="dash-stat-body"><span class="dash-stat-title">Priorità alta</span>
+            <div class="dash-stat-main"><strong id="statHigh">0</strong><span class="dash-stat-caption urgent">Da completare</span></div>
+            <button id="priorityRemindersOpen" class="dash-link" type="button">Vedi priorità</button>
+          </div>
+        </article>
       </div>
-      <div class="cards">
-        <article class="task-card">
-          <div class="task-top"><span class="task-icon">↗</span><span class="state" id="entryState">Da confermare</span></div>
-          <h3>Timbratura entrata</h3>
-          <p id="entryWindow">07:00 – 08:00</p>
-          <button class="primary block" type="button" data-confirm="entry">Ho timbrato l'entrata</button>
-          <a class="secondary block punch-launch-link" href="shortcuts://run-shortcut?name=Pure%20Timbratura">↗ Apri app per timbrare</a>
+      <div class="dashboard-hidden-counts"><span id="statToDo">0</span><span id="statCompleted">0</span></div>
+      <div class="dashboard-grid">
+        <article class="dashboard-card calendar-card">
+          <div class="dashboard-card-heading"><div class="dashboard-heading-label"><span class="dashboard-small-icon" aria-hidden="true">▦</span><h2>Calendario</h2></div><button id="calendarToday" class="calendar-today" type="button">Oggi</button></div>
+          <div class="calendar-navigation"><button id="calendarPrev" type="button" aria-label="Mese precedente">‹</button><strong id="calendarMonth">Novembre 2026</strong><button id="calendarNext" type="button" aria-label="Mese successivo">›</button></div>
+          <div class="calendar-weekdays" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+          <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="Seleziona una data"></div>
+          <div class="calendar-legend"><span><i class="dot-legend"></i> Promemoria</span><span><i class="dot-legend high"></i> Priorità alta</span></div>
         </article>
-        <article class="task-card">
-          <div class="task-top"><span class="task-icon out">↙</span><span class="state" id="exitState">Da confermare</span></div>
-          <h3>Timbratura uscita</h3>
-          <p id="exitWindow">16:00 – 17:00</p>
-          <button class="primary block" type="button" data-confirm="exit">Ho timbrato l'uscita</button>
-          <a class="secondary block punch-launch-link" href="shortcuts://run-shortcut?name=Pure%20Timbratura">↗ Apri app per timbrare</a>
+        <article class="dashboard-card today-agenda">
+          <div class="agenda-head"><div class="agenda-date-icon" aria-hidden="true">▣</div><div><h2 id="selectedDayLabel">Oggi</h2><p id="agendaSubtitle">I tuoi promemoria per oggi</p></div></div>
+          <div class="agenda-content">
+            <div id="todayReminders" class="agenda-reminder-list" aria-live="polite"></div>
+            <button id="goReminders" class="agenda-add" type="button">＋ Aggiungi promemoria per oggi</button>
+          </div>
         </article>
+        <article class="dashboard-card upcoming-card">
+          <div class="dashboard-card-heading"><div class="dashboard-heading-label"><span class="dashboard-upcoming-icon" aria-hidden="true">▱</span><h2>Prossimi promemoria</h2></div><button id="discoverFeatures" class="dashboard-text-link" type="button">Vedi tutti ›</button></div>
+          <div id="upcomingReminders" class="upcoming-list" aria-live="polite"></div>
+        </article>
+      </div>
+      <div class="dashboard-bottom">
+        <span>Attività di oggi: <strong id="todayDate">oggi</strong> · <strong id="dashboardProgress">0 da fare</strong></span>
+        <button id="testAlarm" class="dashboard-text-link" type="button">Prova avviso sonoro</button>
       </div>
       <details class="punch-setup">
-        <summary>Come collegare l'app di timbratura installata su iPhone</summary>
-        <p>La prima volta, sull'iPhone devi creare un comando rapido. In seguito il pulsante <strong>Apri app per timbrare</strong> proverà ad avviare direttamente l'app aziendale.</p>
-        <ol>
-          <li>Apri <strong>Comandi Rapidi</strong> sull'iPhone e premi <strong>+</strong> per crearne uno.</li>
-          <li>Assegna al comando il nome esatto <strong>Pure Timbratura</strong>.</li>
-          <li>Aggiungi l'azione <strong>Apri app</strong> e seleziona la tua app aziendale di timbratura.</li>
-          <li>Salva. Torna in Pure e premi <strong>Apri app per timbrare</strong>.</li>
-        </ol>
-        <p class="punch-help-note">L'app aziendale deve essere già installata. Non è una timbratura automatica: dopo aver timbrato nell'app ufficiale, torna qui e premi <strong>Ho timbrato</strong>. Su Android il collegamento con Comandi Rapidi non è disponibile.</p>
-        <div class="punch-help-links">
-          <a href="shortcuts://create-shortcut">Crea il comando rapido su iPhone</a>
-          <a href="https://apps.apple.com/app/id1612276209" target="_blank" rel="noopener noreferrer">Apri la pagina App Store dell'app aziendale</a>
-        </div>
+        <summary>Come aprire l'app aziendale per timbrare</summary>
+        <p>Su iPhone crea in <strong>Comandi Rapidi</strong> un comando chiamato <strong>Pure Timbratura</strong>, con l'azione <strong>Apri app</strong> e seleziona la tua app ufficiale di timbratura. Poi utilizza <strong>Apri app</strong> nelle schede Entrata e Uscita.</p>
+        <p class="punch-help-note">Il collegamento non timbra automaticamente. Su Android questo comando rapido Apple non funziona. Gli avvisi della versione web richiedono che l'app rimanga aperta.</p>
       </details>
-      <div class="split-head"><h2>Altri promemoria</h2><button class="text-btn" id="goReminders" type="button">Vedi tutti</button></div>
-      <div id="todayReminders" class="reminder-list"></div>
-      <div class="test-box"><div><strong>Prova l'avviso sonoro</strong><small>Si attiva solo dopo un tuo tocco e mentre l'app è aperta.</small></div><button id="testAlarm" class="secondary" type="button">Prova</button></div>
     </section>
     <section class="panel hidden" id="settings" aria-label="Impostazioni ufficio">
       <h2>Il tuo ufficio</h2>
@@ -159,5 +176,6 @@
  </div>
  <script src="./app.js" defer></script>
  <script src="./enhancements.js" defer></script>
+ <script src="./dashboard.js" defer></script>
 </body>
 </html>
