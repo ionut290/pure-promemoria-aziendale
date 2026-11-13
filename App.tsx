@@ -60,7 +60,7 @@ export default function App() {
   const current = useRef<AppData>(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
   const [inside, setInside] = useState<boolean | null>(null);
-  const [status, setStatus] = useState('Imposta la posizione del magazzino');
+  const [status, setStatus] = useState('Imposta la posizione del ufficio');
   const [draft, setDraft] = useState<Settings>(DEFAULT_DATA.settings);
   const [latText, setLatText] = useState('');
   const [lonText, setLonText] = useState('');
@@ -100,7 +100,7 @@ export default function App() {
       }
       const found = await currentWarehouseProximity(dataset.settings);
       setInside(found);
-      setStatus(found === null ? 'Autorizzazione GPS necessaria' : found ? 'Sei vicino al magazzino' : 'Sei fuori dal magazzino');
+      setStatus(found === null ? 'Autorizzazione GPS necessaria' : found ? 'Sei vicino al ufficio' : 'Sei fuori dal ufficio');
       await refreshStampNotifications(dataset, found === true);
     } catch {
       setStatus('Posizione temporaneamente non disponibile');
@@ -168,7 +168,7 @@ export default function App() {
     }
     if (draft.days.length === 0) { Alert.alert('Seleziona almeno un giorno di lavoro'); return; }
     if (wh.radius < 100 || wh.radius > 2000) { Alert.alert('Raggio non valido', 'Scegli un raggio tra 100 e 2000 metri.'); return; }
-    if (updatedSettings.geoOnly && !hasWarehouse(updatedSettings)) { Alert.alert('Manca il magazzino', 'Premi “Usa la mia posizione” oppure inserisci coordinate GPS.'); return; }
+    if (updatedSettings.geoOnly && !hasWarehouse(updatedSettings)) { Alert.alert('Manca il ufficio', 'Premi “Usa la mia posizione” oppure inserisci coordinate GPS.'); return; }
     if ((wh.latitude !== null && (wh.latitude < -90 || wh.latitude > 90)) ||
         (wh.longitude !== null && (wh.longitude < -180 || wh.longitude > 180))) {
       Alert.alert('Coordinate non valide'); return;
@@ -191,7 +191,7 @@ export default function App() {
       if (!granted) { Alert.alert('Permesso non concesso', 'Apri Impostazioni del telefono → Pure Promemoria → Posizione e attiva “Sempre”.'); return; }
       await applyGeofence(draft);
       await refreshGeo({ ...current.current, settings: draft });
-      Alert.alert('GPS autorizzato', 'Il controllo del magazzino è stato configurato sul dispositivo.');
+      Alert.alert('GPS autorizzato', 'Il controllo del ufficio è stato configurato sul dispositivo.');
     } catch (e) { Alert.alert('Impossibile attivare il GPS', String(e)); }
   }
 
@@ -244,7 +244,7 @@ export default function App() {
               <Text style={styles.bigTitle}>Niente più timbrature dimenticate.</Text>
               <Text style={styles.intro}>Avvisi automatici in base a orario e posizione, da confermare personalmente.</Text>
               <Panel style={{ backgroundColor: C.dark, marginTop: 8 }}>
-                <Text style={styles.whiteSmall}>STATO MAGAZZINO</Text>
+                <Text style={styles.whiteSmall}>STATO UFFICIO</Text>
                 <Text style={styles.whiteTitle}>{s.warehouse.name}</Text>
                 <Text style={{ color: '#C0EAE4', marginBottom: 12 }}>{s.geoOnly ? status : 'Promemoria basati solamente sull’orario'}</Text>
                 <View style={styles.lightRow}>
@@ -330,7 +330,7 @@ export default function App() {
               <Text style={styles.bigTitle}>Imposta la tua giornata.</Text>
               <Text style={styles.intro}>Scegli dove e quando desideri che l'app ti ricordi di timbrare.</Text>
               <Panel>
-                <Title>📍 Posizione del magazzino</Title>
+                <Title>📍 Posizione del ufficio</Title>
                 <View style={{ height: 12 }}/>
                 <Field label="Nome" value={settingsWarehouse.name} change={name => setDraft(p=>({...p,warehouse:{...p.warehouse,name}}))}/>
                 <View style={{ height: 12 }}/>
@@ -348,12 +348,12 @@ export default function App() {
               </Panel>
               <Panel>
                 <View style={styles.row}><View style={{flex:1}}><Title>Controllo posizione GPS</Title>
-                    <Text style={styles.muted}>Avvisa solo quando sei nell’area del magazzino.</Text></View>
+                    <Text style={styles.muted}>Avvisa solo quando sei nell’area del ufficio.</Text></View>
                   <Switch value={draft.geoOnly} onValueChange={geoOnly => setDraft(p=>({...p,geoOnly}))} trackColor={{true:C.teal}}/>
                 </View>
                 {draft.geoOnly && <><View style={{height:14}}/><Btn text="Autorizza posizione in background" onPress={() => void permitGPS()} secondary/>
                   <Text style={styles.footnote}>Serve autorizzazione “Sempre”. Il telefono decide quando consegnare gli eventi GPS.</Text></>}
-                {!draft.geoOnly && <Text style={styles.footnote}>Gli avvisi saranno emessi anche fuori dal magazzino, in base agli orari scelti.</Text>}
+                {!draft.geoOnly && <Text style={styles.footnote}>Gli avvisi saranno emessi anche fuori dal ufficio, in base agli orari scelti.</Text>}
               </Panel>
               <Panel>
                 <Title>🕒 Fasce orarie timbratura</Title>
