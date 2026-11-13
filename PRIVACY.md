@@ -4,7 +4,7 @@
 
 ## Dati utilizzati
 
-- Posizione GPS: utilizzata per registrare le coordinate del ufficio su richiesta e per determinare l'entrata o l'uscita da un'area geografica. Il progetto non crea uno storico degli spostamenti e non invia coordinate a un server dell'app.
+- Posizione GPS: utilizzata per registrare le coordinate dell'ufficio su richiesta e per determinare l'entrata o l'uscita da un'area geografica. Il progetto non crea uno storico degli spostamenti e non invia coordinate a un server dell'app.
 - Orari, promemoria, note e conferme: salvati localmente sul dispositivo.
 - Notifiche: generate sul dispositivo per ricordare le attività.
 
