@@ -28,7 +28,7 @@
     </section>
     <nav class="tabs" aria-label="Sezioni">
       <button class="tab active" data-tab="today" type="button"><span>◷</span> Oggi</button>
-      <button class="tab" data-tab="settings" type="button"><span>⌖</span> Magazzino</button>
+      <button class="tab" data-tab="settings" type="button"><span>⌖</span> Ufficio</button>
       <button class="tab" data-tab="reminders" type="button"><span>▤</span> Promemoria</button>
       <button class="tab" data-tab="log" type="button"><span>✓</span> Registro</button>
     </nav>
@@ -53,13 +53,13 @@
       <div id="todayReminders" class="reminder-list"></div>
       <div class="test-box"><div><strong>Prova l'avviso sonoro</strong><small>Si attiva solo dopo un tuo tocco e mentre l'app è aperta.</small></div><button id="testAlarm" class="secondary" type="button">Prova</button></div>
     </section>
-    <section class="panel hidden" id="settings" aria-label="Impostazioni magazzino">
-      <h2>Il tuo magazzino</h2>
+    <section class="panel hidden" id="settings" aria-label="Impostazioni ufficio">
+      <h2>Il tuo ufficio</h2>
       <p class="muted">Configura dove e quando vuoi ricevere il promemoria. I dati rimangono in questo dispositivo.</p>
       <form id="settingsForm">
-        <div class="field"><label for="mode">Quando ricordare la timbratura</label><select id="mode"><option value="gps">Solo se sono vicino al magazzino (app aperta)</option><option value="clock">In base all'orario, senza GPS (app aperta)</option></select></div>
+        <div class="field"><label for="mode">Quando ricordare la timbratura</label><select id="mode"><option value="gps">Solo se sono vicino al ufficio (app aperta)</option><option value="clock">In base all'orario, senza GPS (app aperta)</option></select></div>
         <div class="gps-fields" id="gpsFields">
-          <div class="field"><label for="warehouse">Nome magazzino</label><input id="warehouse" maxlength="90" placeholder="Es. Magazzino aziendale"></div>
+          <div class="field"><label for="warehouse">Nome ufficio</label><input id="warehouse" maxlength="90" placeholder="Es. Ufficio aziendale"></div>
           <div class="two-col">
             <div class="field"><label for="latitude">Latitudine</label><input id="latitude" type="number" step="any" min="-90" max="90" placeholder="44.5…"></div>
             <div class="field"><label for="longitude">Longitudine</label><input id="longitude" type="number" step="any" min="-180" max="180" placeholder="11.3…"></div>
