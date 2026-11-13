@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#116c65">
+  <meta name="description" content="Promemoria di timbratura e attività personali sul lavoro">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pure Promemoria">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="stylesheet" href="./style.css">
+  <title>Pure Promemoria Aziendale</title>
+</head>
+<body>
+ <div class="shell">
+  <header class="header">
+    <div class="brand"><div class="logo" aria-hidden="true">P</div><div><strong>Pure</strong><small>Promemoria Aziendale</small></div></div>
+    <button id="installBtn" class="mini-btn" type="button">Installa app</button>
+  </header>
+  <main>
+    <section class="intro">
+      <div class="eyebrow">LA TUA GIORNATA DI LAVORO</div>
+      <h1>Non dimenticare<br>la timbratura.</h1>
+      <p>Entrata, uscita e promemoria personali in un unico posto.</p>
+      <div class="info-pill"><span class="dot"></span><span id="liveStatus">Pronto per la configurazione</span></div>
+    </section>
+    <nav class="tabs" aria-label="Sezioni">
+      <button class="tab active" data-tab="today" type="button"><span>◷</span> Oggi</button>
+      <button class="tab" data-tab="settings" type="button"><span>⌖</span> Magazzino</button>
+      <button class="tab" data-tab="reminders" type="button"><span>▤</span> Promemoria</button>
+      <button class="tab" data-tab="log" type="button"><span>✓</span> Registro</button>
+    </nav>
+    <section class="panel" id="today" aria-label="Promemoria di oggi">
+      <div class="section-head"><h2>Timbrature di oggi</h2><span id="todayDate" class="muted"></span></div>
+      <div class="notice"><strong>Funziona mentre è aperta.</strong> Questa versione web non può garantire il controllo GPS o la suoneria quando il telefono è bloccato o l'app è chiusa.</div>
+      <div class="cards">
+        <article class="task-card">
+          <div class="task-top"><span class="task-icon">↗</span><span class="state" id="entryState">Da confermare</span></div>
+          <h3>Timbratura entrata</h3>
+          <p id="entryWindow">07:00 – 08:00</p>
+          <button class="primary block" type="button" data-confirm="entry">Ho timbrato l'entrata</button>
+        </article>
+        <article class="task-card">
+          <div class="task-top"><span class="task-icon out">↙</span><span class="state" id="exitState">Da confermare</span></div>
+          <h3>Timbratura uscita</h3>
+          <p id="exitWindow">16:00 – 17:00</p>
+          <button class="primary block" type="button" data-confirm="exit">Ho timbrato l'uscita</button>
+        </article>
+      </div>
+      <div class="split-head"><h2>Altri promemoria</h2><button class="text-btn" id="goReminders" type="button">Vedi tutti</button></div>
+      <div id="todayReminders" class="reminder-list"></div>
+      <div class="test-box"><div><strong>Prova l'avviso sonoro</strong><small>Si attiva solo dopo un tuo tocco e mentre l'app è aperta.</small></div><button id="testAlarm" class="secondary" type="button">Prova</button></div>
+    </section>
+    <section class="panel hidden" id="settings" aria-label="Impostazioni magazzino">
+      <h2>Il tuo magazzino</h2>
+      <p class="muted">Configura dove e quando vuoi ricevere il promemoria. I dati rimangono in questo dispositivo.</p>
+      <form id="settingsForm">
+        <div class="field"><label for="mode">Quando ricordare la timbratura</label><select id="mode"><option value="gps">Solo se sono vicino al magazzino (app aperta)</option><option value="clock">In base all'orario, senza GPS (app aperta)</option></select></div>
+        <div class="gps-fields" id="gpsFields">
+          <div class="field"><label for="warehouse">Nome magazzino</label><input id="warehouse" maxlength="90" placeholder="Es. Magazzino aziendale"></div>
+          <div class="two-col">
+            <div class="field"><label for="latitude">Latitudine</label><input id="latitude" type="number" step="any" min="-90" max="90" placeholder="44.5…"></div>
+            <div class="field"><label for="longitude">Longitudine</label><input id="longitude" type="number" step="any" min="-180" max="180" placeholder="11.3…"></div>
+          </div>
+          <div class="field"><label for="radius">Raggio di rilevamento</label><select id="radius"><option value="100">100 metri</option><option value="150">150 metri</option><option value="300">300 metri</option><option value="500">500 metri</option></select></div>
+          <div class="inline"><button id="locate" type="button" class="secondary">⌖ Usa la posizione attuale</button><span class="muted small" id="positionStatus">Posizione non verificata</span></div>
+        </div>
+        <div class="separator"></div>
+        <h3>Fascia di entrata</h3>
+        <div class="two-col"><div class="field"><label for="entryStart">Dalle</label><input id="entryStart" type="time" required></div><div class="field"><label for="entryEnd">Alle</label><input id="entryEnd" type="time" required></div></div>
+        <h3>Fascia di uscita</h3>
+        <div class="two-col"><div class="field"><label for="exitStart">Dalle</label><input id="exitStart" type="time" required></div><div class="field"><label for="exitEnd">Alle</label><input id="exitEnd" type="time" required></div></div>
+        <div class="field"><label for="interval">Ripeti il promemoria ogni</label><select id="interval"><option value="5">5 minuti</option><option value="10">10 minuti</option><option value="15">15 minuti</option></select></div>
+        <div class="field"><label>Giorni lavorativi</label><div class="weekdays" id="weekdays"><label><input type="checkbox" value="1"> L</label><label><input type="checkbox" value="2"> M</label><label><input type="checkbox" value="3"> M</label><label><input type="checkbox" value="4"> G</label><label><input type="checkbox" value="5"> V</label><label><input type="checkbox" value="6"> S</label><label><input type="checkbox" value="0"> D</label></div></div>
+        <button type="submit" class="primary block">Salva impostazioni</button>
+        <p id="saveMessage" class="feedback" role="status"></p>
+      </form>
+    </section>
+    <section class="panel hidden" id="reminders" aria-label="Altri promemoria">
+      <h2>Promemoria personali</h2>
+      <p class="muted">Aggiungi manutenzioni, documenti, appuntamenti o altre attività di lavoro.</p>
+      <form id="reminderForm" class="form-card">
+        <div class="field"><label for="reminderTitle">Titolo</label><input id="reminderTitle" maxlength="120" required placeholder="Es. Controllare il furgone"></div>
+        <div class="field"><label for="reminderWhen">Data e ora</label><input id="reminderWhen" type="datetime-local" required></div>
+        <div class="field"><label for="reminderRepeat">Ripetizione</label><select id="reminderRepeat"><option value="once">Una sola volta</option><option value="daily">Ogni giorno alla stessa ora</option></select></div>
+        <div class="field"><label for="reminderNotes">Note (facoltative)</label><textarea id="reminderNotes" maxlength="400" rows="2"></textarea></div>
+        <button type="submit" class="primary block">+ Aggiungi promemoria</button>
+      </form>
+      <h3>La tua lista</h3><div id="reminderList" class="reminder-list"></div>
+    </section>
+    <section class="panel hidden" id="log" aria-label="Registro">
+      <h2>Registro conferme</h2>
+      <p class="muted">Le conferme servono solo come memoria personale, non sono timbrature ufficiali.</p>
+      <div id="history" class="history"></div>
+      <div class="data-buttons"><button id="exportData" class="secondary" type="button">Esporta i dati</button><button id="importData" class="secondary" type="button">Importa i dati</button><input id="importFile" type="file" accept=".json,application/json" hidden></div>
+      <div class="notice subtle">I dati sono salvati solo nel browser di questo dispositivo: eliminando i dati del sito possono andare persi. Utilizza Esporta per crearne una copia.</div>
+    </section>
+    <footer><span>Pure Promemoria Aziendale</span><span>Versione web · Nessuna timbratura automatica</span></footer>
+  </main>
+ </div>
+ <div id="alarmOverlay" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="alarmTitle">
+   <div class="dialog"><div class="alarm-symbol">◉</div><div class="eyebrow">PROMEMORIA ATTIVO</div><h2 id="alarmTitle">È ora di timbrare</h2><p id="alarmText"></p><button id="ackAlarm" type="button" class="primary block">Ho fatto, interrompi</button><button id="snoozeAlarm" type="button" class="secondary block">Ricordamelo dopo</button><small>Per fermare l'avviso devi toccare uno dei pulsanti. Funziona soltanto mentre la pagina rimane attiva.</small></div>
+ </div>
+ <div id="installOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+   <div class="dialog"><h2 id="installTitle">Aggiungi Pure alla schermata Home</h2><p id="installInfo">Su iPhone: apri questa pagina in Safari, premi Condividi e scegli “Aggiungi alla schermata Home”. Su Android: dal menu del browser scegli “Installa app” o “Aggiungi a schermata Home”.</p><button id="closeInstall" type="button" class="primary block">Ho capito</button></div>
+ </div>
+ <script src="./app.js" defer></script>
+</body>
+</html>
