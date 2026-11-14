@@ -128,6 +128,16 @@
     const category = r.category || 'lavoro';
     const id = esc(r.id);
     const detail = dueDateLabel(r);
+    const mapUrl = r.latitude && r.longitude
+      ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(r.latitude + ',' + r.longitude)
+      : (r.location ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.location) : '');
+    const phoneUrl = r.phone ? 'tel:' + encodeURIComponent(r.phone) : '';
+    const safeLink = /^https?:\\/\\//i.test(r.link || '') ? r.link : '';
+    const attachments = (r.attachments || []).map(a =>
+      '<span class="attachment-chip"><button type="button" data-attachment-open="' + esc(a.id) + '">' + esc(a.filename || 'Allegato') + '</button>' +
+      '<button type="button" data-attachment-replace="' + esc(a.id) + '" data-reminder-id="' + id + '">Sostituisci</button>' +
+      '<button type="button" data-attachment-remove="' + esc(a.id) + '" data-reminder-id="' + id + '">×</button></span>'
+    ).join('');
     const pills = [
       '<span class="task-chip">' + esc(CATEGORIES[category] || 'Lavoro') + '</span>',
       priority === 'high' ? '<span class="task-chip priority-high">Priorità alta</span>' :
@@ -139,14 +149,16 @@
     return '<article class="reminder-item enhanced' + (completed ? ' completed-reminder' : '') + '">' +
       '<div class="reminder-body"><div class="task-chips">' + pills + '</div><h4>' + esc(r.title) +
       '</h4><p>' + esc(dateLabel(r)) + '</p>' +
+      (r.contact ? '<p>👤 ' + esc(r.contact) + '</p>' : '') +
+      (r.location && mapUrl ? '<p>📍 ' + esc(r.location) + ' <a class="detail-link" target="_blank" rel="noopener" href="' + esc(mapUrl) + '">Google Maps</a></p>' : '') +
+      (r.phone ? '<p>☎ ' + esc(r.phone) + ' <a class="detail-link" href="' + esc(phoneUrl) + '">Chiama</a></p>' : '') +
+      (safeLink ? '<p>🔗 <a class="detail-link" target="_blank" rel="noopener" href="' + esc(safeLink) + '">Apri link</a></p>' : '') +
+      (attachments ? '<div class="attachment-list">' + attachments + '</div>' : '') +
       (r.notes ? '<p>' + esc(r.notes) + '</p>' : '') + '</div>' +
       '<div class="actions advanced-actions">' +
-      (completed ?
-        '<button type="button" class="tiny" data-reopen="' + id + '">Riapri</button>' :
-        '<button type="button" class="tiny task-complete" data-complete="' + id + '">✓ Fatto</button>' +
-        '<button type="button" class="tiny" data-snooze="' + id + '">+10 min</button>') +
-      (manage ? '<button type="button" class="tiny" data-edit="' + id + '">Modifica</button>' +
-        '<button type="button" class="tiny" data-remove="' + id + '">Elimina</button>' : '') +
+      (completed ? '<button type="button" class="tiny" data-reopen="' + id + '">Riapri</button>' :
+        '<button type="button" class="tiny task-complete" data-complete="' + id + '">✓ Fatto</button><button type="button" class="tiny" data-snooze="' + id + '">+10 min</button>') +
+      (manage ? '<button type="button" class="tiny" data-edit="' + id + '">Modifica</button><button type="button" class="tiny" data-remove="' + id + '">Elimina</button>' : '') +
       '</div></article>';
   }
   reminderList = function (items, allowDelete) {
@@ -226,8 +238,7 @@
     $('reminderFeedback').textContent = '';
     futureTime();
   }
-  function submitEnhancedReminder(event) {
-    // Previene la vecchia gestione del modulo senza modificare gli altri dati.
+  async function submitEnhancedReminder(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
     const title = $('reminderTitle').value.trim();
@@ -241,20 +252,37 @@
     const repeat = $('reminderRepeat').value;
     const priority = $('reminderPriority').value;
     const place = $('reminderPlace').value;
+    const contact = $('reminderContact')?.value.trim() || '';
+    const phone = $('reminderPhone')?.value.trim() || '';
+    const location = $('reminderLocation')?.value.trim() || '';
+    const link = $('reminderLink')?.value.trim() || '';
+    const latitude = Number($('reminderLat')?.value) || null;
+    const longitude = Number($('reminderLon')?.value) || null;
+    const files = [...($('reminderFiles')?.files || [])];
     if (!Object.hasOwn(REPEATS, repeat) || !Object.hasOwn(CATEGORIES, category) ||
         !Object.hasOwn(PRIORITIES, priority) || !['any', 'office'].includes(place)) return;
-    if (editingId) {
-      const r = data.reminders.find(x => x.id === editingId);
-      if (!r) { resetForm(); return; }
-      Object.assign(r, { title, when, notes, repeat, category, priority, place });
-      clearCompletion(r.id);
+    const reminderId = editingId || ((typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'r' + Date.now() + Math.random());
+    let reminder = data.reminders.find(x => x.id === reminderId);
+    if (reminder) {
+      Object.assign(reminder, {title, when, notes, repeat, category, priority, place, contact, phone, location, link, latitude, longitude});
+      clearCompletion(reminder.id);
     } else {
-      const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
-        ? crypto.randomUUID() : 'r' + Date.now() + Math.random();
-      data.reminders.push({ id, title, when, notes, repeat, category, priority, place });
+      reminder = {id: reminderId, title, when, notes, repeat, category, priority, place, contact, phone, location, link, latitude, longitude, attachments: []};
+      data.reminders.push(reminder);
     }
-    save(); resetForm(); renderReminders(); renderToday(); check();
-    $('reminderFeedback').textContent = '✓ Promemoria salvato.';
+    save();
+    try {
+      if (files.length && typeof uploadReminderAttachments === 'function') {
+        const uploaded = await uploadReminderAttachments(reminder.id, files);
+        reminder.attachments = [...(reminder.attachments || []), ...uploaded];
+        save();
+      }
+      resetForm(); renderReminders(); renderToday(); check();
+      $('reminderFeedback').textContent = '✓ Promemoria salvato.';
+    } catch (error) {
+      $('reminderFeedback').textContent = error.message || 'Promemoria salvato, ma allegato non caricato.';
+      resetForm(); renderReminders(); renderToday();
+    }
   }
 
   function loadIntoForm(r) {
@@ -266,6 +294,12 @@
     $('reminderPriority').value = r.priority || 'normal';
     $('reminderPlace').value = r.place || 'any';
     $('reminderNotes').value = r.notes || '';
+    if ($('reminderContact')) $('reminderContact').value = r.contact || '';
+    if ($('reminderPhone')) $('reminderPhone').value = r.phone || '';
+    if ($('reminderLocation')) $('reminderLocation').value = r.location || '';
+    if ($('reminderLink')) $('reminderLink').value = r.link || '';
+    if ($('reminderLat')) $('reminderLat').value = r.latitude || '';
+    if ($('reminderLon')) $('reminderLon').value = r.longitude || '';
     $('reminderSubmit').textContent = 'Salva modifiche';
     $('cancelReminderEdit').classList.remove('hidden');
     $('reminderFeedback').textContent = 'Modifica: ' + r.title;
@@ -277,6 +311,11 @@
   document.addEventListener('DOMContentLoaded', function () {
     $('reminderForm').addEventListener('submit', submitEnhancedReminder, true);
     $('cancelReminderEdit').addEventListener('click', resetForm);
+    $('reminderMapOpen')?.addEventListener('click', openReminderMap);
+    $('reminderMapClose')?.addEventListener('click', closeReminderMap);
+    $('reminderMapCancel')?.addEventListener('click', closeReminderMap);
+    $('reminderMapSearch')?.addEventListener('click', searchReminderMap);
+    $('reminderMapConfirm')?.addEventListener('click', confirmReminderMap);
     $('discoverFeatures').addEventListener('click', () => view('reminders'));
     for (const id of ['reminderSearch', 'reminderFilter', 'reminderCategoryFilter']) {
       $(id).addEventListener(id === 'reminderSearch' ? 'input' : 'change', renderReminders);
