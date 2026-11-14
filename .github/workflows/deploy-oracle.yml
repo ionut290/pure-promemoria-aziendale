@@ -9,12 +9,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Prepare SSH key
+        shell: bash
+        env:
+          ORACLE_SSH_KEY_B64: ${{ secrets.ORACLE_SSH_KEY_B64 }}
+        run: |
+          test -n "$ORACLE_SSH_KEY_B64"
+          echo "$ORACLE_SSH_KEY_B64" | base64 --decode > "$RUNNER_TEMP/oracle.key"
+          chmod 600 "$RUNNER_TEMP/oracle.key"
+
       - name: Deploy on Oracle
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.ORACLE_HOST }}
           username: ${{ secrets.ORACLE_USER }}
-          key: ${{ secrets.ORACLE_SSH_KEY }}
+          key_path: ${{ runner.temp }}/oracle.key
           script_stop: true
           script: |
             set -e
