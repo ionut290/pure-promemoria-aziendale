@@ -9,6 +9,7 @@ if(!currentAuth && persistentAuth)sessionStorage.setItem(AUTH_SESSION_KEY,persis
 else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,currentAuth);
   const $c = id => document.getElementById(id);
   const status = s => { if ($c('cloudStatus')) $c('cloudStatus').textContent=s; };
+  const setHeaderAccount = active => { if ($c('headerLogout')) $c('headerLogout').hidden=!active; if ($c('headerAuth')) $c('headerAuth').hidden=!!active; };
   let token='', identity=null, version=null;
   const OWNER_KEY='pure_cloud_owner_v1';
   const owner=()=>localStorage.getItem(OWNER_KEY);
@@ -25,6 +26,7 @@ else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,
   };
   async function state(){
     token=sessionStorage.getItem('pure_auth_session')||'';
+    setHeaderAccount(false);
     $c('cloudUpload').disabled=$c('cloudDownload').disabled=$c('cloudLogout').disabled=true;
     if(!token){if(localStorage.getItem('pure-account-mode-v1') || owner())lockLocalAccount();status('Nessun account attivo. Gli archivi personali sono nascosti.');return;}
     try{
@@ -33,8 +35,9 @@ else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,
       const remote=await api('/data');
       version=remote.version;
       status('Account: '+identity.email+' · Sincronizzazione automatica attiva · Cloud autorevole · versione '+version);
+      setHeaderAccount(true);
       $c('cloudUpload').disabled=$c('cloudDownload').disabled=$c('cloudLogout').disabled=false;
-    }catch(e){identity=null;status('Sincronizzazione automatica in attesa: '+e.message);}
+    }catch(e){identity=null;setHeaderAccount(false);status('Sincronizzazione automatica in attesa: '+e.message);}
   }
   async function upload(){
     if(!identity)return;
@@ -80,6 +83,7 @@ else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,
     $c('cloudUpload').addEventListener('click',upload);
     $c('cloudDownload').addEventListener('click',download);
     $c('cloudLogout').addEventListener('click',logout);
+    $c('headerLogout')?.addEventListener('click',logout);
     state();
   });
 })();
