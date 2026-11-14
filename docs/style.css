@@ -466,3 +466,5 @@ body {
 
 
 .header-logout{background:#fff4f1!important;color:#ad443d!important;border-color:#f0c7c0!important}.header-logout:hover{background:#ffe8e3!important}
+
+.header .header-logout:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center}
