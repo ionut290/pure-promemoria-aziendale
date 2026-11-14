@@ -291,37 +291,40 @@ export default function App() {
                 <View style={styles.focusMain}>
                   <Panel style={styles.todayPanel}>
                     <View style={styles.todayPanelHeader}>
-                      <View><Text style={styles.todayPanelTitle}>Promemoria di oggi</Text><Text style={styles.todayPanelSub}>I tuoi promemoria in programma</Text></View>
-                      <View style={styles.totalBadge}><Text style={styles.totalBadgeText}>{data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).length + (s.windows.entrata.enabled ? 1 : 0) + (s.windows.uscita.enabled ? 1 : 0)} in totale</Text></View>
+                      <View><Text style={styles.todayPanelTitle}>Compiti di oggi</Text><Text style={styles.todayPanelSub}>Le attività della tua giornata lavorativa</Text></View>
+                      <View style={styles.totalBadge}><Text style={styles.totalBadgeText}>{data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).length} in totale</Text></View>
                     </View>
                     <View style={styles.todayList}>
-                      {(['entrata','uscita'] as StampType[]).filter(kind => s.windows[kind].enabled).map(kind => {
-                        const done = isCompletedToday(data.completed, kind);
-                        const w = s.windows[kind];
-                        return <View key={kind} style={styles.focusReminderRow}>
-                          <View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View>
-                          <Text style={styles.focusReminderTime}>{w.start}</Text>
-                          <View style={styles.focusReminderBody}><Text style={[styles.focusReminderTitle, done && styles.focusReminderDone]}>Timbratura {humanStamp(kind)}</Text><Text style={styles.priorityNormal}>Promemoria normale</Text></View>
-                          <TouchableOpacity onPress={() => void markStamp(kind)} style={[styles.focusCheck, done && styles.focusCheckDone]}><Text style={styles.focusCheckText}>{done ? '✓' : ''}</Text></TouchableOpacity>
-                        </View>;
-                      })}
-                      {data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).slice(0, 6).map(item => <View key={item.id} style={styles.focusReminderRow}>
+                      {data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).slice(0, 8).map(item => <View key={item.id} style={styles.focusReminderRow}>
                         <View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View>
                         <Text style={styles.focusReminderTime}>{item.time}</Text>
-                        <View style={styles.focusReminderBody}><Text style={styles.focusReminderTitle}>{item.title}</Text><Text style={styles.priorityNormal}>Promemoria normale</Text></View>
+                        <View style={styles.focusReminderBody}><Text style={styles.focusReminderTitle}>{item.title}</Text><Text style={styles.priorityNormal}>{item.repeat === 'daily' ? 'Ogni giorno' : 'Promemoria normale'}</Text></View>
                         <TouchableOpacity onPress={() => void changePersonal(item.id)} style={styles.focusCheck}><Text style={styles.focusCheckText}></Text></TouchableOpacity>
                       </View>)}
-                      {!data.personal.some(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())) && !s.windows.entrata.enabled && !s.windows.uscita.enabled && <Text style={styles.emptyFocus}>Nessun promemoria per oggi.</Text>}
+                      {!data.personal.some(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())) && <Text style={styles.emptyFocus}>Nessun compito per oggi.</Text>}
                     </View>
+                    <TouchableOpacity style={styles.addTaskButton} onPress={() => { setTab('others'); setExtraOpen(true); }}>
+                      <Text style={styles.addTaskButtonText}>＋ Nuovo promemoria</Text>
+                    </TouchableOpacity>
                   </Panel>
+
                   <Panel style={styles.upcomingFocus}>
                     <View style={styles.cardHeaderRow}><View style={styles.cardTitleRow}><Text style={styles.upcomingIcon}>▱</Text><Text style={styles.cardTitle}>Prossimi promemoria</Text></View><TouchableOpacity onPress={() => setTab('others')}><Text style={styles.link}>Vedi tutti ›</Text></TouchableOpacity></View>
-                    {data.personal.filter(p => p.active && p.date > localDayKey()).slice(0, 3).map(item => <View key={item.id} style={styles.upcomingRow}><View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View><Text style={styles.focusReminderTime}>{item.time}</Text><Text style={styles.upcomingTitle}>{item.title}</Text><Text style={styles.upcomingDate}>{item.date}</Text></View>)}
+                    {data.personal.filter(p => p.active && p.date > localDayKey()).slice(0, 4).map(item => <View key={item.id} style={styles.upcomingRow}><View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View><Text style={styles.focusReminderTime}>{item.time}</Text><Text style={styles.upcomingTitle}>{item.title}</Text><Text style={styles.upcomingDate}>{item.date}</Text></View>)}
                     {!data.personal.some(p => p.active && p.date > localDayKey()) && <Text style={styles.emptyFocus}>Nessun altro promemoria programmato.</Text>}
+                  </Panel>
+
+                  <Panel style={styles.stampSecondary}>
+                    <View style={styles.cardHeaderRow}><View><Text style={styles.secondaryTitle}>Timbrature</Text><Text style={styles.muted}>Funzione secondaria della giornata lavorativa</Text></View><TouchableOpacity onPress={() => setTab('settings')}><Text style={styles.link}>Configura ›</Text></TouchableOpacity></View>
+                    {(['entrata','uscita'] as StampType[]).filter(kind => s.windows[kind].enabled).map(kind => {
+                      const done = isCompletedToday(data.completed, kind);
+                      const w = s.windows[kind];
+                      return <View key={kind} style={styles.stampCompactRow}><Text style={styles.focusReminderTime}>{w.start}</Text><Text style={styles.upcomingTitle}>Timbratura {humanStamp(kind)}</Text><TouchableOpacity onPress={() => void markStamp(kind)} style={[styles.focusCheck, done && styles.focusCheckDone]}><Text style={styles.focusCheckText}>{done ? '✓' : ''}</Text></TouchableOpacity></View>;
+                    })}
                   </Panel>
                 </View>
               </View>
-            </>}
+            </>
 
             {tab === 'others' && <>
               <Text style={styles.bigTitle}>Tutto sotto controllo.</Text>
@@ -495,6 +498,12 @@ const styles = StyleSheet.create({
   upcomingRow:{minHeight:52,flexDirection:'row',alignItems:'center',gap:8,borderTopWidth:1,borderColor:C.line},
   upcomingTitle:{flex:1,color:C.ink,fontSize:13,fontWeight:'800'},
   upcomingDate:{color:C.muted,fontSize:10},
+  addTaskButton:{marginTop:8,backgroundColor:C.teal,borderRadius:12,paddingVertical:13,alignItems:'center'},
+  addTaskButtonText:{color:C.white,fontSize:14,fontWeight:'900'},
+  stampSecondary:{padding:16},
+  secondaryTitle:{color:C.ink,fontSize:16,fontWeight:'900'},
+  stampCompactRow:{minHeight:48,flexDirection:'row',alignItems:'center',gap:10,borderTopWidth:1,borderColor:C.line},
+
   menuOverlay:{flex:1,flexDirection:'row',justifyContent:'flex-end'},
   menuBackdrop:{...StyleSheet.absoluteFillObject,backgroundColor:'#092F2B66'},
   menuPanel:{width:'78%',maxWidth:360,backgroundColor:C.white,paddingHorizontal:20,paddingTop:35,paddingBottom:25},
