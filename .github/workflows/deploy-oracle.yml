@@ -1,0 +1,27 @@
+name: Deploy Oracle
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on Oracle
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd ~/pure-promemoria-deploy/app
+            git fetch origin main
+            git checkout main
+            git reset --hard origin/main
+            cd ~/pure-promemoria-deploy
+            sudo docker compose -f backend/docker-compose.yml up -d --force-recreate web
+            echo "Deploy Oracle completato"
