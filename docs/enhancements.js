@@ -311,11 +311,6 @@
   document.addEventListener('DOMContentLoaded', function () {
     $('reminderForm').addEventListener('submit', submitEnhancedReminder, true);
     $('cancelReminderEdit').addEventListener('click', resetForm);
-    $('reminderMapOpen')?.addEventListener('click', openReminderMap);
-    $('reminderMapClose')?.addEventListener('click', closeReminderMap);
-    $('reminderMapCancel')?.addEventListener('click', closeReminderMap);
-    $('reminderMapSearch')?.addEventListener('click', searchReminderMap);
-    $('reminderMapConfirm')?.addEventListener('click', confirmReminderMap);
     $('discoverFeatures').addEventListener('click', () => view('reminders'));
     for (const id of ['reminderSearch', 'reminderFilter', 'reminderCategoryFilter']) {
       $(id).addEventListener(id === 'reminderSearch' ? 'input' : 'change', renderReminders);
