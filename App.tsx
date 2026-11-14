@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert, AppState, KeyboardAvoidingView, Modal, Platform, ScrollView, StatusBar, StyleSheet,
-  Switch, Text, TextInput, TouchableOpacity, View
+  Switch, Text, TextInput, TouchableOpacity, View, useWindowDimensions
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
@@ -157,8 +157,7 @@ export default function App() {
       if (mounted) setReady(true);
     })();
     const sub = AppState.addEventListener('change', state => {
-      if (state === 'active' && mounted) void refreshGeo().catch(console.warn);
-    });
+      if (state === 'active' && mounted) void refreshGeo().catch(console.warn);    });
     const answer = Notifications.addNotificationResponseReceivedListener(response => {
       if (response.actionIdentifier === 'STAMP_DONE') {
         const kind = response.notification.request.content.data?.stampType;
@@ -260,6 +259,26 @@ export default function App() {
   const remaining = data.personal.filter(p => p.active).length;
   const bothDone = (['entrata','uscita'] as StampType[]).filter(kind => isCompletedToday(data.completed,kind)).length;
   const settingsWarehouse = draft.warehouse;
+  const { width } = useWindowDimensions();
+  const wideDashboard = width >= 900;
+  const todayPersonal = data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey()));
+  const todayTotal = todayPersonal.length + (s.windows.entrata.enabled ? 1 : 0) + (s.windows.uscita.enabled ? 1 : 0);
+  const completedToday = bothDone + data.personal.filter(p => !p.active && (p.repeat === 'daily' || p.date === localDayKey())).length;
+
+  const upcomingPanel = <Panel style={styles.upcomingFocus}>
+    <View style={styles.cardHeaderRow}>
+      <View style={styles.cardTitleRow}><Text style={styles.upcomingIcon}>▱</Text><Text style={styles.cardTitle}>Prossimi promemoria</Text></View>
+      <TouchableOpacity onPress={() => setTab('others')}><Text style={styles.link}>Vedi tutti ›</Text></TouchableOpacity>
+    </View>
+    {data.personal.filter(p => p.active && p.date > localDayKey()).slice(0, 4).map(item =>
+      <View key={item.id} style={styles.upcomingRow}>
+        <View style={styles.upcomingDateBadge}><Text style={styles.upcomingDateDay}>{item.date.slice(8, 10)}</Text><Text style={styles.upcomingDateMonth}>{item.date.slice(5, 7)}</Text></View>
+        <View style={{ flex: 1 }}><Text style={styles.upcomingTitle}>{item.title}</Text><Text style={styles.muted}>◷ {item.time}</Text></View>
+        <Text style={styles.priorityNormal}>Normale</Text>
+      </View>
+    )}
+    {!data.personal.some(p => p.active && p.date > localDayKey()) && <Text style={styles.emptyFocus}>Nessun altro promemoria programmato.</Text>}
+  </Panel>;
 
   return <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top','bottom']}>
@@ -286,13 +305,29 @@ export default function App() {
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
             {tab === 'home' && <>
-              <View style={styles.focusGrid}>
-                <CalendarCard />
-                <View style={styles.focusMain}>
+              <View style={styles.summaryStrip}>
+                <View style={styles.summaryItem}>
+                  <View style={[styles.summaryIcon, { backgroundColor: '#E5F5F1' }]}><Text style={styles.summaryIconText}>☷</Text></View>
+                  <Text style={styles.summaryNumber}>{todayTotal}</Text><Text style={styles.summaryLabel}>Da completare</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryItem}>
+                  <View style={[styles.summaryIcon, { backgroundColor: '#FFE8E5' }]}><Text style={[styles.summaryIconText, { color: C.red }]}>⚑</Text></View>
+                  <Text style={styles.summaryNumber}>0</Text><Text style={[styles.summaryLabel, { color: C.red }]}>Priorità alta</Text>
+                </View>
+                <View style={styles.summaryDivider} />
+                <View style={styles.summaryItem}>
+                  <View style={[styles.summaryIcon, { backgroundColor: '#E5F5F1' }]}><Text style={styles.summaryIconText}>✓</Text></View>
+                  <Text style={styles.summaryNumber}>{completedToday}</Text><Text style={styles.summaryLabel}>Completati</Text>
+                </View>
+              </View>
+              <View style={[styles.focusGrid, wideDashboard && styles.focusGridWide]}>
+                <View style={wideDashboard && styles.focusCalendarWide}><CalendarCard /></View>
+                <View style={[styles.focusMain, wideDashboard && styles.focusMainWide]}>
                   <Panel style={styles.todayPanel}>
                     <View style={styles.todayPanelHeader}>
                       <View><Text style={styles.todayPanelTitle}>Promemoria di oggi</Text><Text style={styles.todayPanelSub}>I tuoi promemoria in programma</Text></View>
-                      <View style={styles.totalBadge}><Text style={styles.totalBadgeText}>{data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).length + (s.windows.entrata.enabled ? 1 : 0) + (s.windows.uscita.enabled ? 1 : 0)} in totale</Text></View>
+                      <View style={styles.totalBadge}><Text style={styles.totalBadgeText}>{todayTotal} in totale</Text></View>
                     </View>
                     <View style={styles.todayList}>
                       {(['entrata','uscita'] as StampType[]).filter(kind => s.windows[kind].enabled).map(kind => {
@@ -305,21 +340,19 @@ export default function App() {
                           <TouchableOpacity onPress={() => void markStamp(kind)} style={[styles.focusCheck, done && styles.focusCheckDone]}><Text style={styles.focusCheckText}>{done ? '✓' : ''}</Text></TouchableOpacity>
                         </View>;
                       })}
-                      {data.personal.filter(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())).slice(0, 6).map(item => <View key={item.id} style={styles.focusReminderRow}>
+                      {todayPersonal.slice(0, 6).map(item => <View key={item.id} style={styles.focusReminderRow}>
                         <View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View>
                         <Text style={styles.focusReminderTime}>{item.time}</Text>
                         <View style={styles.focusReminderBody}><Text style={styles.focusReminderTitle}>{item.title}</Text><Text style={styles.priorityNormal}>Promemoria normale</Text></View>
                         <TouchableOpacity onPress={() => void changePersonal(item.id)} style={styles.focusCheck}><Text style={styles.focusCheckText}></Text></TouchableOpacity>
                       </View>)}
-                      {!data.personal.some(p => p.active && (p.repeat === 'daily' || p.date === localDayKey())) && !s.windows.entrata.enabled && !s.windows.uscita.enabled && <Text style={styles.emptyFocus}>Nessun promemoria per oggi.</Text>}
+                      {!todayPersonal.length && !s.windows.entrata.enabled && !s.windows.uscita.enabled && <Text style={styles.emptyFocus}>Nessun promemoria per oggi.</Text>}
                     </View>
+                    <TouchableOpacity onPress={() => { setTab('others'); setExtraOpen(true); }} style={styles.addReminderButton}><Text style={styles.addReminderButtonText}>＋  Aggiungi promemoria</Text></TouchableOpacity>
                   </Panel>
-                  <Panel style={styles.upcomingFocus}>
-                    <View style={styles.cardHeaderRow}><View style={styles.cardTitleRow}><Text style={styles.upcomingIcon}>▱</Text><Text style={styles.cardTitle}>Prossimi promemoria</Text></View><TouchableOpacity onPress={() => setTab('others')}><Text style={styles.link}>Vedi tutti ›</Text></TouchableOpacity></View>
-                    {data.personal.filter(p => p.active && p.date > localDayKey()).slice(0, 3).map(item => <View key={item.id} style={styles.upcomingRow}><View style={styles.focusReminderIcon}><Text style={styles.focusReminderIconText}>◷</Text></View><Text style={styles.focusReminderTime}>{item.time}</Text><Text style={styles.upcomingTitle}>{item.title}</Text><Text style={styles.upcomingDate}>{item.date}</Text></View>)}
-                    {!data.personal.some(p => p.active && p.date > localDayKey()) && <Text style={styles.emptyFocus}>Nessun altro promemoria programmato.</Text>}
-                  </Panel>
+                  {!wideDashboard && upcomingPanel}
                 </View>
+                {wideDashboard && <View style={styles.focusUpcomingWide}>{upcomingPanel}</View>}
               </View>
             </>}
 
@@ -447,8 +480,19 @@ const styles = StyleSheet.create({
   menuButtonText:{color:C.white,fontSize:25,fontWeight:'700'},
   headerDate:{backgroundColor:C.white,borderWidth:1,borderColor:C.line,borderRadius:18,paddingHorizontal:11,paddingVertical:8,maxWidth:180},
   headerDateText:{color:C.ink,fontSize:10,fontWeight:'800'},
+  summaryStrip:{backgroundColor:C.white,borderRadius:18,borderWidth:1,borderColor:C.line,paddingVertical:14,paddingHorizontal:18,flexDirection:'row',alignItems:'center',justifyContent:'space-around',gap:8},
+  summaryItem:{flex:1,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8},
+  summaryIcon:{width:38,height:38,borderRadius:12,alignItems:'center',justifyContent:'center'},
+  summaryIconText:{color:C.teal,fontSize:21,fontWeight:'900'},
+  summaryNumber:{color:C.ink,fontSize:24,fontWeight:'900'},
+  summaryLabel:{color:'#287452',fontSize:12,fontWeight:'800'},
+  summaryDivider:{width:1,height:35,backgroundColor:C.line},
   focusGrid:{gap:14},
+  focusGridWide:{flexDirection:'row',alignItems:'stretch'},
+  focusCalendarWide:{flex:0.95},
   focusMain:{gap:14},
+  focusMainWide:{flex:1.35},
+  focusUpcomingWide:{flex:1.15},
   calendarCard:{padding:16},
   cardHeaderRow:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8},
   cardTitleRow:{flexDirection:'row',alignItems:'center',gap:9},
@@ -477,8 +521,7 @@ const styles = StyleSheet.create({
   todayPanelSub:{color:'#C9EFE8',fontSize:12,marginTop:4},
   totalBadge:{backgroundColor:'#FFFFFF25',borderRadius:18,paddingHorizontal:10,paddingVertical:8},
   totalBadgeText:{color:C.white,fontSize:11,fontWeight:'800'},
-  todayList:{paddingHorizontal:15,paddingBottom:8},
-  focusReminderRow:{minHeight:62,flexDirection:'row',alignItems:'center',gap:9,borderBottomWidth:1,borderColor:C.line},
+  todayList:{paddingHorizontal:15,paddingBottom:8},  focusReminderRow:{minHeight:62,flexDirection:'row',alignItems:'center',gap:9,borderBottomWidth:1,borderColor:C.line},
   focusReminderIcon:{width:35,height:35,borderRadius:11,backgroundColor:C.pale,alignItems:'center',justifyContent:'center'},
   focusReminderIconText:{color:C.teal,fontSize:18},
   focusReminderTime:{color:C.muted,fontSize:12,width:42},
@@ -490,9 +533,14 @@ const styles = StyleSheet.create({
   focusCheckDone:{backgroundColor:C.teal,borderColor:C.teal},
   focusCheckText:{color:C.white,fontWeight:'900'},
   emptyFocus:{color:C.muted,textAlign:'center',padding:22,fontSize:12},
+  addReminderButton:{marginHorizontal:15,marginTop:8,marginBottom:14,borderRadius:13,backgroundColor:C.teal,paddingVertical:13,alignItems:'center'},
+  addReminderButtonText:{color:C.white,fontSize:13,fontWeight:'900'},
   upcomingFocus:{padding:16},
   upcomingIcon:{color:C.teal,fontSize:30},
-  upcomingRow:{minHeight:52,flexDirection:'row',alignItems:'center',gap:8,borderTopWidth:1,borderColor:C.line},
+  upcomingRow:{minHeight:62,flexDirection:'row',alignItems:'center',gap:9,borderTopWidth:1,borderColor:C.line},
+  upcomingDateBadge:{width:40,height:40,borderRadius:11,backgroundColor:C.pale,alignItems:'center',justifyContent:'center'},
+  upcomingDateDay:{color:C.teal,fontSize:15,fontWeight:'900'},
+  upcomingDateMonth:{color:C.muted,fontSize:9,fontWeight:'800'},
   upcomingTitle:{flex:1,color:C.ink,fontSize:13,fontWeight:'800'},
   upcomingDate:{color:C.muted,fontSize:10},
   menuOverlay:{flex:1,flexDirection:'row',justifyContent:'flex-end'},
