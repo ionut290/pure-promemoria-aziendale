@@ -71,7 +71,7 @@ else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,
   async function request(path, method = 'GET', body) {
     const headers = { Authorization: `Bearer ${token}` };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
-    const response = await fetch(`/api${path}`, {
+    const response = await fetch(`https://pure-promemoria.duckdns.org/api${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),

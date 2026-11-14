@@ -16,7 +16,7 @@
     if(!token){$('state').textContent='Link non valido.';return}
 
     try{
-      const response=await fetch('/api/share/'+encodeURIComponent(token),{cache:'no-store'});
+      const response=await fetch('https://pure-promemoria.duckdns.org/api/share/'+encodeURIComponent(token),{cache:'no-store'});
       const value=await response.json().catch(()=>({}));
       if(!response.ok)throw Error(value.detail||'Link non valido o scaduto.');
 
@@ -35,7 +35,7 @@
           $('accept').disabled=true;
           $('accept').textContent='Aggiunta in corso…';
           try{
-            const saved=await fetch('/api/share/'+encodeURIComponent(token)+'/accept',{
+            const saved=await fetch('https://pure-promemoria.duckdns.org/api/share/'+encodeURIComponent(token)+'/accept',{
               method:'POST',
               headers:{Authorization:'Bearer '+current}
             });

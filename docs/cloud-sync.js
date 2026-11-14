@@ -18,7 +18,7 @@ else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,
   const api = async (url, method='GET', payload) => {
     const headers={Authorization:'Bearer '+token};
     if(payload!==undefined)headers['Content-Type']='application/json';
-    const res=await fetch('/api'+url,{method,headers,body:payload===undefined?undefined:JSON.stringify(payload),cache:'no-store'});
+    const res=await fetch('https://pure-promemoria.duckdns.org/api'+url,{method,headers,body:payload===undefined?undefined:JSON.stringify(payload),cache:'no-store'});
     const obj=await res.json().catch(()=>({}));
     if(!res.ok)throw Error(res.status===409?'Conflitto: dati cambiati da un altro dispositivo. Ricarica la pagina e riprova.':res.status===401?'Sessione scaduta. Effettua nuovamente l’accesso.':(obj.detail||'Errore HTTP '+res.status));
     return obj;
