@@ -73,7 +73,7 @@ else if(currentAuth && !persistentAuth)localStorage.setItem(PERSISTENT_AUTH_KEY,
   async function logout(){
     if(!confirm('Uscire dall’account? I dati personali non saranno più mostrati nell’app. Rimarranno conservati in questo browser fino a una cancellazione manuale.'))return;
     try{await api('/auth/logout','POST',{})}catch(e){}
-    sessionStorage.removeItem('pure_auth_session');localStorage.removeItem(PERSISTENT_AUTH_KEY);token='';identity=null;version=null;lockLocalAccount();await state();
+    sessionStorage.removeItem('pure_auth_session');localStorage.removeItem(PERSISTENT_AUTH_KEY);token='';identity=null;version=null;setHeaderAccount(false);lockLocalAccount();await state();
   }
   document.addEventListener('DOMContentLoaded',()=>{
     if(!$c('cloudUpload'))return;
