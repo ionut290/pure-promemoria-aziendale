@@ -145,7 +145,8 @@
         '<button type="button" class="tiny" data-reopen="' + id + '">Riapri</button>' :
         '<button type="button" class="tiny task-complete" data-complete="' + id + '">✓ Fatto</button>' +
         '<button type="button" class="tiny" data-snooze="' + id + '">+10 min</button>') +
-      (manage ? '<button type="button" class="tiny" data-edit="' + id + '">Modifica</button>' +
+      '<button type="button" class="tiny" data-share="' + id + '">WhatsApp</button>' +
+        (manage ? '<button type="button" class="tiny" data-edit="' + id + '">Modifica</button>' +
         '<button type="button" class="tiny" data-remove="' + id + '">Elimina</button>' : '') +
       '</div></article>';
   }
@@ -282,15 +283,17 @@
       $(id).addEventListener(id === 'reminderSearch' ? 'input' : 'change', renderReminders);
     }
     document.addEventListener('click', function (event) {
-      const btn = event.target.closest?.('button[data-edit],button[data-snooze],button[data-reopen]');
+      const btn = event.target.closest?.('button[data-edit],button[data-snooze],button[data-reopen],button[data-share]');
       if (!btn) return;
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      const id = btn.dataset.edit || btn.dataset.snooze || btn.dataset.reopen;
+      const id = btn.dataset.edit || btn.dataset.snooze || btn.dataset.reopen || btn.dataset.share;
       const r = data.reminders.find(x => x.id === id);
       if (!r) return;
-      if (btn.hasAttribute('data-edit')) {
+      if (btn.hasAttribute('data-share')) {
+          if (typeof shareReminder === 'function') shareReminder(id);
+        } else if (btn.hasAttribute('data-edit')) {
         loadIntoForm(r);
       } else if (btn.hasAttribute('data-snooze')) {
         data.snoozes[id] = Date.now() + 10 * 60000;

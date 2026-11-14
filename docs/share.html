@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#244d43">
+<title>Promemoria condivisa</title>
+<style>
+body{margin:0;min-height:100vh;background:#eef5f1;color:#17382f;font-family:system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center;padding:20px;box-sizing:border-box}
+.card{width:min(100%,520px);background:white;border-radius:24px;padding:28px;box-shadow:0 16px 50px #17382f22}
+.brand{font-size:.8rem;letter-spacing:.12em;color:#5c8c7c;font-weight:700}
+h1{margin:10px 0 22px;font-size:1.8rem}
+.preview{background:#f4f8f6;border-radius:16px;padding:18px;margin:16px 0}
+#title{margin:0 0 10px;font-size:1.35rem}
+.meta{color:#557269;margin:7px 0}
+#notes{white-space:pre-wrap}
+button,a{display:block;width:100%;box-sizing:border-box;border:0;border-radius:12px;padding:13px 16px;margin-top:12px;text-align:center;font-size:1rem;text-decoration:none;cursor:pointer}
+button{background:#28725d;color:white}
+a{background:#e4eee9;color:#214f42}
+.hidden{display:none!important}
+#state{color:#5b7169}
+</style>
+</head>
+<body>
+<main class="card">
+<div class="brand">PURE PROMEMORIA AZIENDALE</div>
+<h1>Promemoria condivisa</h1>
+<p id="state">Caricamento…</p>
+<section id="preview" class="preview hidden">
+<h2 id="title"></h2>
+<p id="when" class="meta"></p>
+<p id="repeat" class="meta"></p>
+<p id="notes"></p>
+</section>
+<button id="accept" class="hidden" type="button">＋ Aggiungi alle mie promemoria</button>
+<a id="login" class="hidden" href="#">Accedi per aggiungerla</a>
+<a href="./">Apri Pure Promemoria</a>
+</main>
+<script src="./share.js?v=share-v1" defer></script>
+</body>
+</html>

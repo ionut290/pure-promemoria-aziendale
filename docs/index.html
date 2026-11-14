@@ -10,13 +10,14 @@
   <meta name="apple-mobile-web-app-title" content="Pure Promemoria">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=dashboard-v32">
   <title>Pure Promemoria Aziendale</title>
 </head>
 <body>
  <div class="shell">
   <header class="header">
     <div class="brand"><div class="logo" aria-hidden="true">P</div><div><strong>Pure</strong><small>Promemoria Aziendale</small></div></div>
+    <a class="mini-btn" href="./auth.html" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center">Accedi / Registrati</a>
     <button id="installBtn" class="mini-btn" type="button">Installa app</button>
   </header>
   <main>
@@ -41,37 +42,43 @@
     </nav>
     <section class="panel dashboard-panel" id="today" aria-label="Dashboard e calendario">
       <div class="dash-stats">
-        <article class="dash-stat">
-          <div class="dash-stat-icon" aria-hidden="true">⇥</div>
-          <div class="dash-stat-body"><span class="dash-stat-title">Entrata</span>
-            <div class="dash-stat-main"><strong id="entryWindow">07:00 – 08:00</strong><span class="state" id="entryState">Da confermare</span></div>
-            <div class="dash-stat-actions"><button class="dash-link" type="button" data-confirm="entry">Ho timbrato</button><a href="shortcuts://run-shortcut?name=Pure%20Timbratura" class="dash-link">Apri app</a></div>
-          </div>
-        </article>
-        <article class="dash-stat">
-          <div class="dash-stat-icon" aria-hidden="true">⇤</div>
-          <div class="dash-stat-body"><span class="dash-stat-title">Uscita</span>
-            <div class="dash-stat-main"><strong id="exitWindow">16:00 – 17:00</strong><span class="state" id="exitState">Da confermare</span></div>
-            <div class="dash-stat-actions"><button class="dash-link" type="button" data-confirm="exit">Ho timbrato</button><a href="shortcuts://run-shortcut?name=Pure%20Timbratura" class="dash-link">Apri app</a></div>
-          </div>
-        </article>
-        <article class="dash-stat">
-          <div class="dash-stat-icon" aria-hidden="true">♧</div>
-          <div class="dash-stat-body"><span class="dash-stat-title">Promemoria attivi</span>
-            <div class="dash-stat-main"><strong id="activeRemindersCount">0</strong><span class="dash-stat-caption">Da completare</span></div>
-            <button id="activeRemindersOpen" class="dash-link" type="button">Visualizza attività</button>
-          </div>
-        </article>
-        <article class="dash-stat">
-          <div class="dash-stat-icon high" aria-hidden="true">⚑</div>
-          <div class="dash-stat-body"><span class="dash-stat-title">Priorità alta</span>
-            <div class="dash-stat-main"><strong id="statHigh">0</strong><span class="dash-stat-caption urgent">Da completare</span></div>
-            <button id="priorityRemindersOpen" class="dash-link" type="button">Vedi priorità</button>
-          </div>
-        </article>
-      </div>
-      <div class="dashboard-hidden-counts"><span id="statToDo">0</span><span id="statCompleted">0</span></div>
-      <div class="dashboard-grid">
+  <article class="dash-stat">
+    <div class="dash-stat-icon">⇥</div>
+    <div class="dash-stat-body"><span class="dash-stat-title">Entrata</span>
+      <div class="dash-stat-main"><strong id="entryWindow">07:00 – 08:00</strong><span class="state" id="entryState">Da confermare</span></div>
+      <div class="dash-stat-actions"><button class="dash-link" type="button" data-confirm="entry">Ho timbrato</button><a href="shortcuts://run-shortcut?name=Pure%20Timbratura" class="dash-link">Apri app</a></div>
+    </div>
+  </article>
+  <article class="dash-stat">
+    <div class="dash-stat-icon">⇤</div>
+    <div class="dash-stat-body"><span class="dash-stat-title">Uscita</span>
+      <div class="dash-stat-main"><strong id="exitWindow">16:00 – 17:00</strong><span class="state" id="exitState">Da confermare</span></div>
+      <div class="dash-stat-actions"><button class="dash-link" type="button" data-confirm="exit">Ho timbrato</button><a href="shortcuts://run-shortcut?name=Pure%20Timbratura" class="dash-link">Apri app</a></div>
+    </div>
+  </article>
+  <article class="dash-stat">
+    <div class="dash-stat-icon">♧</div>
+    <div class="dash-stat-body"><span class="dash-stat-title">Promemoria attivi</span>
+      <div class="dash-stat-main"><strong id="activeRemindersCount">0</strong><span class="dash-stat-caption">Da completare</span></div>
+      <button id="activeRemindersOpen" class="dash-link" type="button">Visualizza attività</button>
+    </div>
+  </article>
+  <article class="dash-stat">
+    <div class="dash-stat-icon high">⚑</div>
+    <div class="dash-stat-body"><span class="dash-stat-title">Priorità alta</span>
+      <div class="dash-stat-main"><strong id="statHigh">0</strong><span class="dash-stat-caption urgent">Da completare</span></div>
+      <button id="priorityRemindersOpen" class="dash-link" type="button">Vedi priorità</button>
+    </div>
+  </article>
+  <article class="dash-stat completed-stat">
+    <div class="dash-stat-icon">✓</div>
+    <div class="dash-stat-body"><span class="dash-stat-title">Completati</span>
+      <div class="dash-stat-main"><strong id="statCompleted">0</strong><span class="dash-stat-caption">Oggi</span></div>
+    </div>
+  </article>
+</div>
+<div class="dashboard-hidden-counts"><span id="statToDo">0</span></div>
+<div class="dashboard-grid">
         <article class="dashboard-card calendar-card">
           <div class="dashboard-card-heading"><div class="dashboard-heading-label"><span class="dashboard-small-icon" aria-hidden="true">▦</span><h2>Calendario</h2></div><button id="calendarToday" class="calendar-today" type="button">Oggi</button></div>
           <div class="calendar-navigation"><button id="calendarPrev" type="button" aria-label="Mese precedente">‹</button><strong id="calendarMonth">Novembre 2026</strong><button id="calendarNext" type="button" aria-label="Mese successivo">›</button></div>
@@ -156,7 +163,20 @@
           <div class="field"><label for="reminderCategory">Categoria</label><select id="reminderCategory"><option value="lavoro">Lavoro</option><option value="mezzi">Mezzi e attrezzature</option><option value="documenti">Documenti</option><option value="appuntamenti">Appuntamenti</option><option value="personale">Personale</option></select></div>
           <div class="field"><label for="reminderPlace">Dove avvisare</label><select id="reminderPlace"><option value="any">Ovunque</option><option value="office">Solo vicino all'ufficio (app aperta)</option></select></div>
         </div>
-        <div class="field"><label for="reminderNotes">Note (facoltative)</label><textarea id="reminderNotes" maxlength="400" rows="2"></textarea></div>
+        <div class="two-col">
+  <div class="field"><label for="reminderContact">Persona / azienda</label><input id="reminderContact" maxlength="120" placeholder="Es. Cliente Rossi"></div>
+  <div class="field"><label for="reminderPhone">Numero di telefono</label><input id="reminderPhone" type="tel" maxlength="30" placeholder="+39 333 1234567"></div>
+</div>
+<div class="two-col">
+  <div class="field"><label for="reminderLocation">Posizione</label><input id="reminderLocation" maxlength="240" placeholder="Cerca o inserisci un indirizzo"></div>
+  <div class="field"><label for="reminderLink">Link utile</label><input id="reminderLink" type="url" maxlength="500" placeholder="https://..."></div>
+</div>
+<div class="inline">
+  <button id="reminderMapSearch" class="secondary" type="button">📍 Cerca su Google Maps</button>
+  <span class="muted small">La posizione verrà salvata nella promemoria.</span>
+</div>
+<div class="field"><label for="reminderFiles">Foto e documenti</label><input id="reminderFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"></div>
+<div class="field"><label for="reminderNotes">Note (facoltative)</label><textarea id="reminderNotes" maxlength="400" rows="2"></textarea></div>
         <div class="form-actions"><button id="reminderSubmit" type="submit" class="primary block">+ Aggiungi promemoria</button><button id="cancelReminderEdit" type="button" class="secondary hidden">Annulla modifica</button></div>
         <p id="reminderFeedback" class="feedback" role="status"></p>
       </form>
@@ -183,7 +203,23 @@
         <div class="view-hero-badge"><span aria-hidden="true">⌁</span> Registro personale</div>
       </div>
       <div class="log-layout">
-        <div class="workspace-card history-card"><div class="card-title"><span aria-hidden="true">✓</span><div><strong>Ultime conferme</strong><small>La cronologia più recente</small></div></div><div id="history" class="history"></div></div>
+        <div class="workspace-card history-card"><div class="card-title"><span aria-hidden="true">✓</span><div><strong>Ultime conferme</strong><small>La cronologia più recente</small></div></div><section id="cloudSection" class="workspace-card" style="margin:16px 0;padding:20px;">
+<h3>☁️ Sincronizzazione personale</h3>
+<div id="autoCloudControls" style="margin-top:14px;padding:12px;border:1px solid #c8dcd5;border-radius:12px">
+<strong>Sincronizzazione automatica online</strong>
+<p id="autoCloudStatus" role="status" style="font-size:.86rem;margin:8px 0 0">Sempre attiva dopo l’accesso. Si sospende solo per proteggere i dati in caso di conflitto.</p>
+</div>
+<p id="cloudStatus" role="status">Controllo account…</p>
+<p>Salvataggio locale attivo. Sincronizzazione automatica obbligatoria · Cloud autorevole.</p>
+<div class="data-buttons" style="display:flex;gap:8px;flex-wrap:wrap;">
+<button id="cloudUpload" class="primary" type="button" disabled style="display:none!important" style="display:none!important">↑ Salva online</button>
+<button id="cloudDownload" class="secondary" type="button" disabled style="display:none!important" style="display:none!important">↓ Recupera dal cloud</button>
+<button id="cloudLogout" class="secondary" type="button" disabled>Esci dall’account</button>
+<a href="./auth.html">Accedi / Registrati</a>
+</div>
+<p style="font-size:.86rem">I dati locali restano salvati. Il Cloud è l’archivio principale e la sincronizzazione automatica aggiorna tutti i dispositivi. Prima di applicare i dati Cloud viene conservata una copia locale di sicurezza.</p>
+</section>
+<div id="history" class="history"></div></div>
         <aside class="workspace-aside data-aside"><div class="aside-icon" aria-hidden="true">⇩</div><h3>Salva una copia</h3><p>Esporta i dati prima di cambiare telefono o di cancellare i dati del browser.</p><div class="data-buttons"><button id="exportData" class="primary" type="button">⇩ Esporta dati</button><button id="importData" class="secondary" type="button">⇧ Importa dati</button><input id="importFile" type="file" accept=".json,application/json" hidden></div><div class="notice subtle">I dati restano solo in questo browser. Conserva il file esportato in un posto sicuro.</div></aside>
       </div>
     </section>
@@ -196,8 +232,11 @@
  <div id="installOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="installTitle">
    <div class="dialog"><h2 id="installTitle">Aggiungi Pure alla schermata Home</h2><p id="installInfo">Su iPhone: apri questa pagina in Safari, premi Condividi e scegli “Aggiungi alla schermata Home”. Su Android: dal menu del browser scegli “Installa app” o “Aggiungi a schermata Home”.</p><button id="closeInstall" type="button" class="primary block">Ho capito</button></div>
  </div>
- <script src="./app.js" defer></script>
- <script src="./enhancements.js" defer></script>
+ <script src="./app.js?v=details-v1" defer></script>
+  <script src="./cloud-sync.js?v=auto-authoritative-v1" defer></script>
+  <script src="./auto-sync.js?v=sync-fix-v6" defer></script>
+ <script src="./enhancements.js?v=whatsapp-real-1" defer></script>
  <script src="./dashboard.js" defer></script>
+  <script src="./focus-dashboard.js?v=focus-v1" defer></script>
 </body>
 </html>

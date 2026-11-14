@@ -1,6 +1,6 @@
 /* Cache statico per apertura offline, senza notifiche push o GPS in background. */
-const VERSION='pure-web-cache-v7';
-const ASSETS=['./','./index.html','./style.css','./app.js','./enhancements.js','./dashboard.js','./hero-workspace.svg','./manifest.webmanifest','./icon.svg'];
+const VERSION='pure-web-cache-v33-hide-timbrature';
+const ASSETS=['./','./index.html','./style.css','./app.js?v=details-v1','./enhancements.js?v=whatsapp-real-1','./dashboard.js','./hero-workspace.svg','./manifest.webmanifest','./icon.svg','./cloud-sync.js?v=auto-authoritative-v1','./auth-controller.js','./share.html','./share.js?v=share-v1','./auto-sync.js?v=sync-fix-v6','./focus-dashboard.js?v=focus-v1'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(VERSION).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

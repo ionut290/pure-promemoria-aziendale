@@ -3,11 +3,42 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const STORE='pure-promemoria-web-v1';
+const ACCOUNT_MODE_KEY='pure-account-mode-v1';
+const OWNER_KEY_LOCAL='pure_cloud_owner_v1';
+// Nessun dato personale viene mostrato finché il server non verifica la sessione.
+let activeStorageKey=(sessionStorage.getItem('pure_auth_session') || localStorage.getItem(ACCOUNT_MODE_KEY) || localStorage.getItem(OWNER_KEY_LOCAL))?null:STORE;
+
 const BASE={settings:{mode:'gps',warehouse:'Ufficio aziendale',lat:null,lng:null,radius:150,entryStart:'07:00',entryEnd:'08:00',exitStart:'16:00',exitEnd:'17:00',interval:5,days:[1,2,3,4,5]},confirmations:{},reminders:[],completed:{},snoozes:{}};
 const clone=x=>JSON.parse(JSON.stringify(x));
-function load(){try{let x=JSON.parse(localStorage.getItem(STORE));if(x&&typeof x==='object'&&!Array.isArray(x)){if(x.settings?.warehouse==='Magazzino aziendale')x.settings.warehouse='Ufficio aziendale';return {settings:{...BASE.settings,...x.settings},confirmations:x.confirmations||{},reminders:Array.isArray(x.reminders)?x.reminders:[],completed:x.completed||{},snoozes:x.snoozes||{}};} }catch(e){}return clone(BASE)}
+function load(){try{let x=JSON.parse((activeStorageKey?localStorage.getItem(activeStorageKey):null));if(x&&typeof x==='object'&&!Array.isArray(x)){if(x.settings?.warehouse==='Magazzino aziendale')x.settings.warehouse='Ufficio aziendale';return {settings:{...BASE.settings,...x.settings},confirmations:x.confirmations||{},reminders:Array.isArray(x.reminders)?x.reminders:[],completed:x.completed||{},snoozes:x.snoozes||{}};} }catch(e){}return clone(BASE)}
 let data=load(),coords=null,watchId=null,alarm=null,audio=null,beeps=null,postponed={},lastPrompt={},installPrompt=null;
-function save(){try{localStorage.setItem(STORE,JSON.stringify(data));return true}catch(e){$('liveStatus').textContent='Memoria locale non disponibile';return false}}
+function save(){try{if(!activeStorageKey)return false;localStorage.setItem(activeStorageKey,JSON.stringify(data));window.dispatchEvent(new Event('pure-local-saved'));return true}catch(e){$('liveStatus').textContent='Memoria locale non disponibile';return false}}
+function refreshAccountView(){
+  if(typeof closeAlarm==='function')closeAlarm();
+  if(typeof fillSettings==='function')fillSettings();
+  if(typeof startGps==='function')startGps();
+  if(typeof renderToday==='function')renderToday();
+  if(typeof renderReminders==='function')renderReminders();
+  if(typeof renderLog==='function')renderLog();
+}
+function switchLocalAccount(id){
+  if(!/^[0-9a-f-]{36}$/i.test(String(id)))throw Error('Identificativo account non valido');
+  const next=STORE+'-account-'+id;
+  // I dati legacy vengono copiati, mai cancellati, solo se già associati a questo account.
+  if(localStorage.getItem(OWNER_KEY_LOCAL)===id && !localStorage.getItem(next)){
+    const old=localStorage.getItem(STORE);
+    if(old)localStorage.setItem(next,old);
+  }
+  localStorage.setItem(ACCOUNT_MODE_KEY,'1');
+  activeStorageKey=next;
+  data=load();
+  refreshAccountView();
+}
+function lockLocalAccount(){
+  activeStorageKey=null;
+  data=clone(BASE);
+  refreshAccountView();
+}
 function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function day(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function minutes(t){let m=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(t||'');return m?+m[1]*60+ +m[2]:NaN}
@@ -29,7 +60,39 @@ function reminderDone(r){if(r.repeat==='daily'){let d=day();data.completed[d]??=
 function doneReminder(r){return r.repeat==='daily'?!!data.completed[day()]?.[r.id]:!!data.completed.once?.[r.id]}
 function timeForReminder(r){let date=new Date(r.when);if(Number.isNaN(date.getTime())||doneReminder(r))return false;if(r.repeat==='daily')return Date.now()>=date.getTime()&&currentMinute()>=date.getHours()*60+date.getMinutes();return Date.now()>=date.getTime()}
 function dateLabel(r){let d=new Date(r.when);return r.repeat==='daily'?'Ogni giorno alle '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):d.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
-function reminderList(items,allowDelete){if(!items.length)return '<div class="empty">Nessun promemoria da visualizzare.</div>';return items.map(r=>'<div class="reminder-item"><div><h4>'+esc(r.title)+'</h4><p>'+esc(dateLabel(r))+(doneReminder(r)?' · Completato':'')+'</p>'+(r.notes?'<p>'+esc(r.notes)+'</p>':'')+'</div><div class="actions"><button class="tiny" type="button" data-complete="'+esc(r.id)+'" '+(doneReminder(r)?'disabled':'')+'>'+(doneReminder(r)?'✓':'Fatto')+'</button>'+(allowDelete?'<button class="tiny" type="button" data-remove="'+esc(r.id)+'">Elimina</button>':'')+'</div></div>').join('')}
+async function shareReminder(id){
+  const reminder=data.reminders.find(x=>x.id===id);
+  const auth=sessionStorage.getItem('pure_auth_session')||localStorage.getItem('pure_auth_session_persistent');
+  if(!reminder||!auth){alert('Accedi prima di condividere la promemoria.');return}
+  try{
+    const response=await fetch('/api/share',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+auth},
+      body:JSON.stringify({reminder})
+    });
+    const value=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(value.detail||'Impossibile creare il link.');
+    location.href=value.whatsapp_url;
+  }catch(error){alert(error.message||'Impossibile condividere la promemoria.')}
+}
+function reminderList(items,allowDelete){
+  if(!items.length)return '<div class="empty">Nessun promemoria da visualizzare.</div>';
+  return items.map(r=>{
+    const mapUrl=r.location?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.location):'';
+    const phone=r.phone?'tel:'+encodeURIComponent(r.phone):'';
+    const link=/^https?:\/\//i.test(r.link||'')?r.link:'';
+    const attachments=(r.attachments||[]).map(a=>'<span class="attachment-chip">📎 '+esc(a.filename||'Allegato')+'</span>').join('');
+    return '<div class="reminder-item"><div><h4>'+esc(r.title)+'</h4>'
+      +'<p>'+esc(dateLabel(r))+(doneReminder(r)?' · Completato':'')+'</p>'
+      +(r.contact?'<p>👤 '+esc(r.contact)+'</p>':'')
+      +(r.location?'<p>📍 '+esc(r.location)+' <a class="detail-link" target="_blank" rel="noopener" href="'+esc(mapUrl)+'">Google Maps</a></p>':'')
+      +(r.phone?'<p>☎ '+esc(r.phone)+' <a class="detail-link" href="'+esc(phone)+'">Chiama</a></p>':'')
+      +(link?'<p>🔗 <a class="detail-link" target="_blank" rel="noopener" href="'+esc(link)+'">Apri link</a></p>':'')
+      +(attachments?'<div class="attachment-list">'+attachments+'</div>':'')
+      +(r.notes?'<p>'+esc(r.notes)+'</p>':'')
+      +'</div><div class="actions"><button class="tiny" type="button" data-share="'+esc(r.id)+'">WhatsApp</button><button class="tiny" type="button" data-complete="'+esc(r.id)+'" '+(doneReminder(r)?'disabled':'')+'>'+(doneReminder(r)?'✓':'Fatto')+'</button>'+(allowDelete?'<button class="tiny" type="button" data-remove="'+esc(r.id)+'">Elimina</button>':'')+'</div></div>';
+  }).join('')
+}
 function renderReminders(){data.reminders.sort((a,b)=>String(a.when).localeCompare(String(b.when)));$('reminderList').innerHTML=reminderList(data.reminders,true)}
 function renderToday(){let s=data.settings;$('todayDate').textContent=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});$('entryWindow').textContent=s.entryStart+' – '+s.entryEnd;$('exitWindow').textContent=s.exitStart+' – '+s.exitEnd;for(let type of ['entry','exit']){let ok=donePunch(type),state=$(type+'State'),button=document.querySelector('[data-confirm="'+type+'"]');state.textContent=ok?'✓ Confermata':workday()?'Da confermare':'Giorno di riposo';state.classList.toggle('done',ok);button.disabled=ok;button.textContent=ok?'✓ Confermata':type==='entry'?"Ho timbrato l'entrata":"Ho timbrato l'uscita"}let now=new Date(),list=data.reminders.filter(r=>{let d=new Date(r.when);return r.repeat==='daily'?now>=new Date(d.getFullYear(),d.getMonth(),d.getDate()):d.toDateString()===now.toDateString()||(!doneReminder(r)&&d<now)});$('todayReminders').innerHTML=reminderList(list.slice(0,7),false);status()}
 function renderLog(){let records=[];for(let [d,parts] of Object.entries(data.confirmations)){for(let type of ['entry','exit'])if(parts[type])records.push({d,type,stamp:new Date(parts[type])})}records.sort((a,b)=>b.stamp-a.stamp);$('history').innerHTML=records.length?records.slice(0,100).map(x=>'<div class="history-item"><strong>'+(x.type==='entry'?'↗ Entrata':'↙ Uscita')+'</strong><span>'+esc(x.d)+' · '+x.stamp.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})+'</span></div>').join(''):'<div class="empty">Nessuna conferma registrata.</div>'}
@@ -41,15 +104,58 @@ function check(){if(alarm||document.hidden)return;let s=data.settings,now=Date.n
 function exportData(){let url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));let a=document.createElement('a');a.href=url;a.download='pure-promemoria-'+day()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 async function importData(file){if(!file||file.size>2000000){alert('Seleziona un file JSON inferiore a 2 MB.');return}try{let x=JSON.parse(await file.text());if(!x||typeof x!=='object'||!x.settings||!Array.isArray(x.reminders)||!x.confirmations)throw Error();if(!confirm('Importare questo backup? Sostituirà i dati presenti.'))return;data={settings:{...BASE.settings,...x.settings},reminders:x.reminders,confirmations:x.confirmations,completed:x.completed||{},snoozes:x.snoozes||{}};save();closeAlarm();fillSettings();startGps();renderToday();renderReminders();renderLog();alert('Backup importato.')}catch(e){alert('File di backup non valido.')}}
 function futureTime(){let d=new Date(Date.now()+3600000),local=new Date(d.getTime()-d.getTimezoneOffset()*60000);$('reminderWhen').value=local.toISOString().slice(0,16)}
+
+async function uploadReminderAttachments(reminderId, files) {
+  const token = sessionStorage.getItem('pure_auth_session');
+  if (!token || !files.length) return [];
+  const uploaded = [];
+  for (const file of files) {
+    const form = new FormData();
+    form.append('reminder_id', reminderId);
+    form.append('file', file);
+    const response = await fetch('/api/attachments', {
+      method: 'POST',
+      headers: {Authorization: 'Bearer ' + token},
+      body: form
+    });
+    if (!response.ok) throw Error('Allegato non caricato: ' + file.name);
+    uploaded.push(await response.json());
+  }
+  return uploaded;
+}
+
 function init(){
  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>view(b.dataset.tab)));
  $('goReminders').addEventListener('click',()=>view('reminders'));
  $('mode').addEventListener('change',()=>$('gpsFields').classList.toggle('hidden',$('mode').value!=='gps'));
  $('locate').addEventListener('click',()=>locate(true));
  $('settingsForm').addEventListener('submit',e=>{e.preventDefault();try{data.settings=readSettings();save();$('saveMessage').textContent='✓ Impostazioni salvate';startGps();renderToday();check()}catch(err){$('saveMessage').textContent=err.message}});
+
+  $('reminderMapSearch')?.addEventListener('click',()=>{
+    const value=$('reminderLocation').value.trim();
+    if(!value){$('reminderLocation').focus();return}
+    window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(value),'_blank','noopener')
+  });
+
  document.querySelectorAll('[data-confirm]').forEach(b=>b.addEventListener('click',()=>confirmPunch(b.dataset.confirm)));
- $('reminderForm').addEventListener('submit',e=>{e.preventDefault();let title=$('reminderTitle').value.trim(),when=$('reminderWhen').value,repeat=$('reminderRepeat').value,notes=$('reminderNotes').value.trim();if(!title||!when||Number.isNaN(new Date(when).getTime()))return;let id=crypto.randomUUID?crypto.randomUUID():'r'+Date.now()+Math.random();data.reminders.push({id,title,when,repeat,notes});save();$('reminderForm').reset();futureTime();renderReminders();renderToday();check()});
- document.addEventListener('click',e=>{let b=e.target.closest('[data-complete]');if(b){let r=data.reminders.find(x=>x.id===b.dataset.complete);if(r)reminderDone(r);return}let del=e.target.closest('[data-remove]');if(del){let r=data.reminders.find(x=>x.id===del.dataset.remove);if(r&&confirm('Eliminare il promemoria “'+r.title+'”?')){data.reminders=data.reminders.filter(x=>x.id!==r.id);save();renderReminders();renderToday()}}});
+ $('reminderForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  let title=$('reminderTitle').value.trim(),when=$('reminderWhen').value;
+  let repeat=$('reminderRepeat').value,notes=$('reminderNotes').value.trim();
+  let contact=$('reminderContact').value.trim(),phone=$('reminderPhone').value.trim();
+  let location=$('reminderLocation').value.trim(),link=$('reminderLink').value.trim();
+  if(!title||!when||Number.isNaN(new Date(when).getTime()))return;
+  let id=crypto.randomUUID?crypto.randomUUID():'r'+Date.now()+Math.random();
+  let item={id,title,when,repeat,notes,contact,phone,location,link,attachments:[]};
+  data.reminders.push(item);save();
+  try{
+    const files=[...($('reminderFiles')?.files||[])];
+    item.attachments=await uploadReminderAttachments(id,files);
+    save();
+  }catch(error){alert(error.message||'Allegati non caricati');}
+  $('reminderForm').reset();futureTime();renderReminders();renderToday();check()
+});
+ document.addEventListener('click',e=>{let sh=e.target.closest('[data-share]');if(sh){shareReminder(sh.dataset.share);return}let b=e.target.closest('[data-complete]');if(b){let r=data.reminders.find(x=>x.id===b.dataset.complete);if(r)reminderDone(r);return}let del=e.target.closest('[data-remove]');if(del){let r=data.reminders.find(x=>x.id===del.dataset.remove);if(r&&confirm('Eliminare il promemoria “'+r.title+'”?')){data.reminders=data.reminders.filter(x=>x.id!==r.id);save();renderReminders();renderToday()}}});
  $('ackAlarm').addEventListener('click',()=>dismissAlarm(true));$('snoozeAlarm').addEventListener('click',()=>dismissAlarm(false));
  $('testAlarm').addEventListener('click',()=>showAlarm('test','test','Prova promemoria','Questo avviso è soltanto dimostrativo.'));
  $('exportData').addEventListener('click',exportData);$('importData').addEventListener('click',()=>$('importFile').click());$('importFile').addEventListener('change',e=>{importData(e.target.files?.[0]);e.target.value='' });
