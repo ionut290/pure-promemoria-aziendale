@@ -132,7 +132,7 @@
       ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(r.latitude + ',' + r.longitude)
       : (r.location ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.location) : '');
     const phoneUrl = r.phone ? 'tel:' + encodeURIComponent(r.phone) : '';
-    const safeLink = /^https?:\\/\\//i.test(r.link || '') ? r.link : '';
+    const safeLink = /^https?:\/\//i.test(r.link || '') ? r.link : '';
     const attachments = (r.attachments || []).map(a =>
       '<span class="attachment-chip"><button type="button" data-attachment-open="' + esc(a.id) + '">' + esc(a.filename || 'Allegato') + '</button>' +
       '<button type="button" data-attachment-replace="' + esc(a.id) + '" data-reminder-id="' + id + '">Sostituisci</button>' +
