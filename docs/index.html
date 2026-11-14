@@ -11,6 +11,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <title>Pure Promemoria Aziendale</title>
 </head>
 <body>
@@ -156,7 +158,30 @@
           <div class="field"><label for="reminderCategory">Categoria</label><select id="reminderCategory"><option value="lavoro">Lavoro</option><option value="mezzi">Mezzi e attrezzature</option><option value="documenti">Documenti</option><option value="appuntamenti">Appuntamenti</option><option value="personale">Personale</option></select></div>
           <div class="field"><label for="reminderPlace">Dove avvisare</label><select id="reminderPlace"><option value="any">Ovunque</option><option value="office">Solo vicino all'ufficio (app aperta)</option></select></div>
         </div>
+        <div class="two-col">
+          <div class="field"><label for="reminderContact">Persona / azienda</label><input id="reminderContact" maxlength="120" placeholder="Es. Cliente Rossi"></div>
+          <div class="field"><label for="reminderPhone">Numero di telefono</label><input id="reminderPhone" type="tel" maxlength="30" placeholder="+39 333 1234567"></div>
+        </div>
+        <div class="field">
+          <label>Posizione</label>
+          <input id="reminderLocation" maxlength="240" readonly placeholder="Nessuna posizione selezionata">
+          <input id="reminderLat" type="hidden">
+          <input id="reminderLon" type="hidden">
+          <button id="reminderMapOpen" class="secondary" type="button">📍 Apri mappa</button>
+          <p id="reminderMapStatus" class="muted small">Scegli una posizione sulla mappa.</p>
+        </div>
+        <div class="field"><label for="reminderLink">Link utile</label><input id="reminderLink" type="url" maxlength="500" placeholder="https://..."></div>
+        <div class="field"><label for="reminderFiles">Foto e documenti</label><input id="reminderFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"></div>
         <div class="field"><label for="reminderNotes">Note (facoltative)</label><textarea id="reminderNotes" maxlength="400" rows="2"></textarea></div>
+        <div id="reminderMapModal" class="map-modal hidden" aria-hidden="true">
+          <div class="map-modal-card">
+            <div class="map-modal-head"><strong>Scegli posizione</strong><button id="reminderMapClose" type="button">×</button></div>
+            <div class="map-search-row"><input id="reminderMapQuery" placeholder="Cerca indirizzo o luogo"><button id="reminderMapSearch" class="secondary" type="button">Cerca</button></div>
+            <div id="reminderMapResults" class="map-results"></div>
+            <div id="reminderMap" class="reminder-map"></div>
+            <div class="map-modal-actions"><button id="reminderMapCancel" class="secondary" type="button">Annulla</button><button id="reminderMapConfirm" class="primary" type="button">✓ Conferma posizione</button></div>
+          </div>
+        </div>
         <div class="form-actions"><button id="reminderSubmit" type="submit" class="primary block">+ Aggiungi promemoria</button><button id="cancelReminderEdit" type="button" class="secondary hidden">Annulla modifica</button></div>
         <p id="reminderFeedback" class="feedback" role="status"></p>
       </form>
@@ -196,7 +221,7 @@
  <div id="installOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="installTitle">
    <div class="dialog"><h2 id="installTitle">Aggiungi Pure alla schermata Home</h2><p id="installInfo">Su iPhone: apri questa pagina in Safari, premi Condividi e scegli “Aggiungi alla schermata Home”. Su Android: dal menu del browser scegli “Installa app” o “Aggiungi a schermata Home”.</p><button id="closeInstall" type="button" class="primary block">Ho capito</button></div>
  </div>
- <script src="./app.js" defer></script>
+ <script src="./app.js?v=map-files-v1" defer></script>
  <script src="./enhancements.js" defer></script>
  <script src="./dashboard.js" defer></script>
 </body>
