@@ -463,3 +463,6 @@ body {
 .detail-link{color:#087c72;font-weight:800;text-decoration:underline}
 .attachment-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .attachment-chip{display:inline-flex;padding:5px 8px;border-radius:10px;background:#e5f5f1;color:#17685f;font-size:.78rem}
+
+
+.header-logout{background:#fff4f1!important;color:#ad443d!important;border-color:#f0c7c0!important}.header-logout:hover{background:#ffe8e3!important}
