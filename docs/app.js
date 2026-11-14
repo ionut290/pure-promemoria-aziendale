@@ -3,11 +3,18 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const STORE='pure-promemoria-web-v1';
+const ACCOUNT_MODE_KEY='pure-account-mode-v1';
+const OWNER_KEY_LOCAL='pure_cloud_owner_v1';
+let activeStorageKey=(sessionStorage.getItem('pure_auth_session') || localStorage.getItem(ACCOUNT_MODE_KEY) || localStorage.getItem(OWNER_KEY_LOCAL))?null:STORE;
 const BASE={settings:{mode:'gps',warehouse:'Ufficio aziendale',lat:null,lng:null,radius:150,entryStart:'07:00',entryEnd:'08:00',exitStart:'16:00',exitEnd:'17:00',interval:5,days:[1,2,3,4,5]},confirmations:{},reminders:[],completed:{},snoozes:{}};
 const clone=x=>JSON.parse(JSON.stringify(x));
-function load(){try{let x=JSON.parse(localStorage.getItem(STORE));if(x&&typeof x==='object'&&!Array.isArray(x)){if(x.settings?.warehouse==='Magazzino aziendale')x.settings.warehouse='Ufficio aziendale';return {settings:{...BASE.settings,...x.settings},confirmations:x.confirmations||{},reminders:Array.isArray(x.reminders)?x.reminders:[],completed:x.completed||{},snoozes:x.snoozes||{}};} }catch(e){}return clone(BASE)}
+function load(){try{let x=JSON.parse(localStorage.getItem(activeStorageKey));if(x&&typeof x==='object'&&!Array.isArray(x)){if(x.settings?.warehouse==='Magazzino aziendale')x.settings.warehouse='Ufficio aziendale';return {settings:{...BASE.settings,...x.settings},confirmations:x.confirmations||{},reminders:Array.isArray(x.reminders)?x.reminders:[],completed:x.completed||{},snoozes:x.snoozes||{}};} }catch(e){}return clone(BASE)}
 let data=load(),coords=null,watchId=null,alarm=null,audio=null,beeps=null,postponed={},lastPrompt={},installPrompt=null;
-function save(){try{localStorage.setItem(STORE,JSON.stringify(data));return true}catch(e){$('liveStatus').textContent='Memoria locale non disponibile';return false}}
+function save(){try{if(!activeStorageKey)return false;localStorage.setItem(activeStorageKey,JSON.stringify(data));window.dispatchEvent(new Event('pure-local-saved'));return true}catch(e){$('liveStatus').textContent='Memoria locale non disponibile';return false}}
+
+function refreshAccountView(){if(typeof closeAlarm==='function')closeAlarm();if(typeof fillSettings==='function')fillSettings();if(typeof startGps==='function')startGps();if(typeof renderToday==='function')renderToday();if(typeof renderReminders==='function')renderReminders();if(typeof renderLog==='function')renderLog()}
+function switchLocalAccount(id){if(!/^[0-9a-f-]{36}$/i.test(String(id)))throw Error('Identificativo account non valido');const next=STORE+'-account-'+id; if(localStorage.getItem(OWNER_KEY_LOCAL)===id&&!localStorage.getItem(next)){const old=localStorage.getItem(STORE);if(old)localStorage.setItem(next,old)} localStorage.setItem(ACCOUNT_MODE_KEY,'1');activeStorageKey=next;data=load();refreshAccountView()}
+function lockLocalAccount(){activeStorageKey=null;data=clone(BASE);refreshAccountView()}
 function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function day(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function minutes(t){let m=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(t||'');return m?+m[1]*60+ +m[2]:NaN}
