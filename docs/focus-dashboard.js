@@ -83,7 +83,7 @@
         openTab('Registro');
         setTimeout(() => document.getElementById('cloudSection')?.scrollIntoView({behavior:'smooth'}), 250);
       } else if (target === 'account') {
-        location.href = './auth.html';
+        window.location.assign('./auth.html');
       } else if (target === 'export') {
         openTab('Registro');
         setTimeout(() => document.getElementById('exportData')?.scrollIntoView({behavior:'smooth'}), 250);
