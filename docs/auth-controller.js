@@ -29,7 +29,8 @@ async function restorePersistentSession(){
     const response=await fetch('https://pure-promemoria.duckdns.org/api/auth/me',{headers:{Authorization:'Bearer '+stored},cache:'no-store'});
     if(response.ok){
       sessionStorage.setItem(AUTH_SESSION_KEY,stored);
-      afterAuth();
+      show('profile');
+      status('Sei già autenticato.');
       return true;
     }
   }catch(e){}
