@@ -1,6 +1,6 @@
 /* Cache statico per apertura offline, senza notifiche push o GPS in background. */
-const VERSION='pure-web-cache-v8-map-files';
-const ASSETS=['./','./index.html','./style.css','./app.js?v=map-files-v1','./enhancements.js','./dashboard.js','./hero-workspace.svg','./manifest.webmanifest','./icon.svg'];
+const VERSION='pure-web-cache-v9-js-fix';
+const ASSETS=['./','./index.html','./style.css','./app.js?v=map-files-v2','./enhancements.js','./dashboard.js','./hero-workspace.svg','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(VERSION).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
