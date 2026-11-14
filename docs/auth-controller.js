@@ -19,14 +19,14 @@ function afterAuth(){
   }catch(e){}
   location.replace('./');
 }function show(next){mode=next;status('');const copy={login:['Accedi al tuo account','Inserisci le tue credenziali.','Accedi'],register:['Crea un account','Riceverai un link per confermare la tua email.','Registrati'],forgot:['Recupera la password','Ti invieremo un link per impostarne una nuova.','Invia il link'],verify:['Conferma la tua email','Conferma la registrazione in modo sicuro.','Conferma email'],reset:['Imposta una nuova password','Scegli una password di almeno 12 caratteri.','Salva nuova password'],profile:['Accesso effettuato','Il tuo account è stato verificato.','Esci dall’account']}[next];$('heading').textContent=copy[0];$('subtitle').textContent=copy[1];$('submit').textContent=copy[2];$('emailField').classList.toggle('hidden',['verify','reset','profile'].includes(next));$('passwordField').classList.toggle('hidden',['verify','forgot','profile'].includes(next));$('passwordLabel').textContent=next==='reset'?'Nuova password':'Password';$('password').autocomplete=next==='login'?'current-password':'new-password';$('links').classList.toggle('hidden',['verify','reset','profile'].includes(next));$('disabled').classList.toggle('hidden',available&&(next!=='register'||signup));$('submit').disabled=(!available)||(next==='register'&&!signup);}
-async function api(endpoint,body,auth){const headers={'Content-Type':'application/json'};if(auth)headers.Authorization='Bearer '+auth;let response=await fetch('/api/auth/'+endpoint,{method:'POST',headers,body:JSON.stringify(body||{})});let value=await response.json().catch(()=>({}));if(!response.ok)throw Error(typeof value.detail==='string'?value.detail:'Richiesta non riuscita ('+response.status+')');return value;}
+async function api(endpoint,body,auth){const headers={'Content-Type':'application/json'};if(auth)headers.Authorization='Bearer '+auth;let response=await fetch('https://pure-promemoria.duckdns.org/api/auth/'+endpoint,{method:'POST',headers,body:JSON.stringify(body||{})});let value=await response.json().catch(()=>({}));if(!response.ok)throw Error(typeof value.detail==='string'?value.detail:'Richiesta non riuscita ('+response.status+')');return value;}
 $('login').onclick=()=>show('login');$('register').onclick=()=>show('register');$('forgot').onclick=()=>show('forgot');
 $('form').addEventListener('submit',async event=>{event.preventDefault();if(!available)return;let email=$('email').value.trim(),password=$('password').value;let data={email,password};$('submit').disabled=true;status('Operazione in corso…');try{let result;if(mode==='register'){result=await api('register',data);status(result.message||'Se possibile, riceverai una email di verifica.')}else if(mode==='login'){result=await api('login',data);sessionStorage.setItem('pure_auth_session',result.access_token);localStorage.setItem(PERSISTENT_AUTH_KEY,result.access_token);afterAuth()}else if(mode==='forgot'){result=await api('forgot-password',{email});status(result.message||'Controlla la tua email.')}else if(mode==='verify'){result=await api('verify-email',{token});status(result.message||'Email verificata.');history.replaceState({},'',location.pathname);setTimeout(()=>show('login'),1800)}else if(mode==='reset'){result=await api('reset-password',{token,password});status(result.message||'Password aggiornata.');history.replaceState({},'',location.pathname);setTimeout(()=>show('login'),1800)}else if(mode==='profile'){let t=sessionStorage.getItem('pure_auth_session');await api('logout',{},t);sessionStorage.removeItem('pure_auth_session');localStorage.removeItem(PERSISTENT_AUTH_KEY);show('login');status('Disconnessione effettuata.')}}catch(e){status(e.message,true)}finally{$('submit').disabled=!available||(mode==='register'&&!signup)}});
 async function restorePersistentSession(){
   const stored=localStorage.getItem(PERSISTENT_AUTH_KEY);
   if(!stored)return false;
   try{
-    const response=await fetch('/api/auth/me',{headers:{Authorization:'Bearer '+stored},cache:'no-store'});
+    const response=await fetch('https://pure-promemoria.duckdns.org/api/auth/me',{headers:{Authorization:'Bearer '+stored},cache:'no-store'});
     if(response.ok){
       sessionStorage.setItem(AUTH_SESSION_KEY,stored);
       afterAuth();
@@ -37,7 +37,7 @@ async function restorePersistentSession(){
   sessionStorage.removeItem(AUTH_SESSION_KEY);
   return false;
 }
-(async()=>{if(await restorePersistentSession())return;if(token&&/^\/verify-email(?:\.html|\/)?$/.test(path))show('verify');else if(token&&/^\/reset-password(?:\.html|\/)?$/.test(path))show('reset');else show('login');try{let r=await fetch('/api/auth/status',{cache:'no-store'});let j=await r.json();available=r.ok&&j.status==='ready';signup=j.registration_enabled===true;if(!available)status('Gli account non sono ancora attivi. I tuoi promemoria locali rimangono disponibili nella pagina principale.');show(mode)}catch(e){available=false;show(mode);status('Impossibile contattare il servizio account.',true)}})();
+(async()=>{if(await restorePersistentSession())return;if(token&&/^\/verify-email(?:\.html|\/)?$/.test(path))show('verify');else if(token&&/^\/reset-password(?:\.html|\/)?$/.test(path))show('reset');else show('login');try{let r=await fetch('https://pure-promemoria.duckdns.org/api/auth/status',{cache:'no-store'});let j=await r.json();available=r.ok&&j.status==='ready';signup=j.registration_enabled===true;if(!available)status('Gli account non sono ancora attivi. I tuoi promemoria locali rimangono disponibili nella pagina principale.');show(mode)}catch(e){available=false;show(mode);status('Impossibile contattare il servizio account.',true)}})();
 
 
 /* GOOGLE_LOGIN_V1 */
@@ -83,7 +83,7 @@ async function restorePersistentSession(){
 
   async function initGoogle() {
     try {
-      const response = await fetch('/api/auth/google-config', {
+      const response = await fetch('https://pure-promemoria.duckdns.org/api/auth/google-config', {
         cache: 'no-store'
       });
       if (!response.ok) return;
