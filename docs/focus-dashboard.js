@@ -17,7 +17,7 @@
   }
 
   function updateDashboardClass() {
-    const dashboard = document.getElementById('today');
+    const dashboard = document.getElementById('dashboard');
     document.body.classList.toggle(
       'pure-focus-dashboard',
       !!dashboard && !dashboard.classList.contains('hidden')
